@@ -1,10 +1,12 @@
 package com.dreamgyf.dim;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,14 +14,25 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
 import com.dreamgyf.dim.adapter.MainViewPagerAdapter;
+import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.exception.MqttException;
+import com.dreamgyf.mqtt.client.MqttTopic;
+import com.dreamgyf.mqtt.client.callback.MqttMessageCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
+
+    private Handler handler = new Handler();
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     private ViewPager viewPager;
 
@@ -37,6 +50,32 @@ public class MainActivity extends AppCompatActivity {
 
         initViewPager();
         initBottomNavigation();
+
+        Runnable sub = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    StaticData.mqttClient.subscribe(new MqttTopic("/Dim/497163175/#"));
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        executorService.execute(sub);
+
+        StaticData.mqttClient.setCallback(new MqttMessageCallback() {
+            @Override
+            public void messageArrived(String s, final String s1) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,s1,Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
     }
 
     private void initViewPager() {
@@ -94,16 +133,12 @@ public class MainActivity extends AppCompatActivity {
                 m.setAccessible(true);
                 m.invoke(menu, true);
             } catch (NoSuchMethodException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
