@@ -1,0 +1,27 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">#7873F4</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+    </style>
+
+    <style name="LoginEditText" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">#C175C7</item>
+        <item name="colorControlActivated">#7873F4</item>
+    </style>
+
+    <style name="OverflowButtonStyle" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="srcCompat">@drawable/ic_add</item>
+        <item name="android:paddingRight">10dp</item>
+    </style>
+
+    <style name="OverflowStyle" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="overlapAnchor">false</item>
+    </style>
+
+</resources>
