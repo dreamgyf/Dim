@@ -1,42 +1,62 @@
 package com.dreamgyf.dim;
 
 import android.content.Intent;
+import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.entity.Data;
+import com.dreamgyf.dim.sharedpreferences.UserInfo;
 import com.dreamgyf.exception.MqttException;
 import com.dreamgyf.mqtt.MqttVersion;
 import com.dreamgyf.mqtt.client.MqttClient;
+import com.dreamgyf.mqtt.client.MqttTopic;
 import com.dreamgyf.mqtt.client.callback.MqttConnectCallback;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
     private Handler handler = new Handler();
 
-    private LinearLayout loginButton;
+    private RelativeLayout loginButton;
 
     private EditText usernameText;
 
     private EditText passwordText;
+
+    private ImageView staticLogin;
+
+    private ImageView animLogin;
+
+    private Animatable loadingAnim;
+
+    private boolean isLogining = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,80 +66,206 @@ public class LoginActivity extends AppCompatActivity {
         initEditText();
         initLoginButton();
 
-//        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-//        startActivity(intent);
-//        finish();
+        initData();
+
+    }
+
+    private void initData() {
+        Map<String,String> userInfo = UserInfo.getUserInfo(this);
+        if(userInfo.get("username") != null) {
+            login(userInfo.get("username"),userInfo.get("password"));
+        }
+        StaticData.conversationList = new LinkedList<>();
     }
 
     private void initEditText() {
         usernameText = findViewById(R.id.username);
         passwordText = findViewById(R.id.password);
+        passwordText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_GO) {
+                    try {
+                        String username = usernameText.getText().toString();
+                        String password = passwordText.getText().toString();
+                        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                        sha256.update(password.getBytes());
+                        String passwordSha256 = new BigInteger(1, sha256.digest()).toString(16);
+                        login(username,passwordSha256);
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     private void initLoginButton() {
         loginButton = findViewById(R.id.login);
+        staticLogin = findViewById(R.id.staticLogin);
+        animLogin = findViewById(R.id.animLogin);
+        loadingAnim = (Animatable) animLogin.getDrawable();
         //点击登录
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //获取输入用户名密码
-                final String username = usernameText.getText().toString();
-                final String password = passwordText.getText().toString();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //查询数据库,获取用户信息
-                        try {
-                            URL url = new URL(StaticData.DOMAIN + "/signIn");
-                            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                            httpURLConnection.setRequestMethod("POST");
-                            Map<String,String> params = new HashMap<>();
-                            params.put("username",username);
-                            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-                            sha256.update(password.getBytes());
-                            params.put("password", new BigInteger(1, sha256.digest()).toString(16));
-                            String post = new Gson().toJson(params);
-                            httpURLConnection.setDoOutput(true);
-                            DataOutputStream dos = new DataOutputStream(httpURLConnection.getOutputStream());
-                            dos.writeBytes(post);
-                            dos.flush();
-                            dos.close();
+                try {
+                    String username = usernameText.getText().toString();
+                    String password = passwordText.getText().toString();
+                    MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                    sha256.update(password.getBytes());
+                    String passwordSha256 = new BigInteger(1, sha256.digest()).toString(16);
+                    login(username,passwordSha256);
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void login(final String username, final String passwordSha256) {
+        staticLogin.setVisibility(View.INVISIBLE);
+        animLogin.setVisibility(View.VISIBLE);
+        loadingAnim.start();
+        if(!isLogining) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    isLogining = true;
+                    //查询数据库,获取用户信息
+                    try {
+                        URL url = new URL(StaticData.DOMAIN + "/signin");
+                        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                        httpURLConnection.setRequestMethod("POST");
+                        httpURLConnection.setRequestProperty("Content-Type","application/json; charset=UTF-8");
+                        Map<String,String> params = new HashMap<>();
+                        params.put("username",username);
+                        params.put("password", passwordSha256);
+                        String post = new Gson().toJson(params);
+                        httpURLConnection.setDoOutput(true);
+                        httpURLConnection.setDoInput(true);
+                        OutputStream os = httpURLConnection.getOutputStream();
+                        os.write(post.getBytes("UTF-8"));
+                        os.flush();
+                        os.close();
+                        if(httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                             BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
                             String resp = "";
                             String line;
                             while((line = in.readLine()) != null)
                                 resp += line;
                             in.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchAlgorithmException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim497163175").setBroker("mq.tongxinmao.com").setPort(18831).build();
-                            StaticData.mqttClient.connect(new MqttConnectCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
+                            final JsonObject jsonObject = new JsonParser().parse(resp).getAsJsonObject();
+                            if("0".equals(jsonObject.get("code").getAsString())) {
+                                UserInfo.setUserInfo(LoginActivity.this,username,passwordSha256);
+                                StaticData.data = new Gson().fromJson(jsonObject.get("data"),Data.class);
+                                try {
+                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.data.getMy().getUsername()).setBroker("mq.tongxinmao.com").setPort(18831).build();
+                                    StaticData.mqttClient.connect(new MqttConnectCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            try {
+                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.data.getMy().getId() + "/#"));
+                                            } catch (MqttException e) {
+                                                e.printStackTrace();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    staticLogin.setVisibility(View.VISIBLE);
+                                                    animLogin.setVisibility(View.INVISIBLE);
+                                                    loadingAnim.stop();
+                                                }
+                                            });
+                                            Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+
+                                        @Override
+                                        public void onFailure() {
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    staticLogin.setVisibility(View.VISIBLE);
+                                                    animLogin.setVisibility(View.INVISIBLE);
+                                                    loadingAnim.stop();
+                                                }
+                                            });
+                                            Toast errorInfo = Toast.makeText(LoginActivity.this,null,Toast.LENGTH_SHORT);
+                                            errorInfo.setText("连接聊天服务器失败");
+                                            errorInfo.show();
+                                        }
+                                    });
+                                } catch (IOException | MqttException e) {
+                                    e.printStackTrace();
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            staticLogin.setVisibility(View.VISIBLE);
+                                            animLogin.setVisibility(View.INVISIBLE);
+                                            loadingAnim.stop();
+                                            Toast errorInfo = Toast.makeText(LoginActivity.this,null,Toast.LENGTH_SHORT);
+                                            errorInfo.setText("连接聊天服务器失败");
+                                            errorInfo.show();
+                                        }
+                                    });
                                 }
-
+                            }
+                            else {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        staticLogin.setVisibility(View.VISIBLE);
+                                        animLogin.setVisibility(View.INVISIBLE);
+                                        loadingAnim.stop();
+                                        Toast errorInfo = Toast.makeText(LoginActivity.this,null,Toast.LENGTH_SHORT);
+                                        errorInfo.setText(jsonObject.get("msg").getAsString());
+                                        errorInfo.show();
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            handler.post(new Runnable() {
                                 @Override
-                                public void onFailure() {
-
+                                public void run() {
+                                    staticLogin.setVisibility(View.VISIBLE);
+                                    animLogin.setVisibility(View.INVISIBLE);
+                                    loadingAnim.stop();
+                                    Toast errorInfo = Toast.makeText(LoginActivity.this,null,Toast.LENGTH_SHORT);
+                                    errorInfo.setText("网络连接错误");
+                                    errorInfo.show();
                                 }
                             });
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (MqttException e) {
-                            e.printStackTrace();
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast errorInfo = Toast.makeText(LoginActivity.this,null,Toast.LENGTH_SHORT);
+                                errorInfo.setText("网络连接错误");
+                                errorInfo.show();
+                            }
+                        });
+                    } finally {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                staticLogin.setVisibility(View.VISIBLE);
+                                animLogin.setVisibility(View.INVISIBLE);
+                                loadingAnim.stop();
+                            }
+                        });
+                        isLogining = false;
                     }
-                }).start();
 
-            }
-        });
+                }
+            }).start();
+        }
     }
 }

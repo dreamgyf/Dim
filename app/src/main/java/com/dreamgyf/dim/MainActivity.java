@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,13 +14,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
 import com.dreamgyf.dim.adapter.MainViewPagerAdapter;
+import com.dreamgyf.dim.adapter.MessagePageListViewAdapter;
 import com.dreamgyf.dim.data.StaticData;
-import com.dreamgyf.exception.MqttException;
-import com.dreamgyf.mqtt.client.MqttTopic;
+import com.dreamgyf.dim.entity.Conversation;
+import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.mqtt.client.callback.MqttMessageCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
 
+    private MessagePageListViewAdapter messagePageListViewAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,27 +53,26 @@ public class MainActivity extends AppCompatActivity {
         initViewPager();
         initBottomNavigation();
 
-        Runnable sub = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    StaticData.mqttClient.subscribe(new MqttTopic("/Dim/497163175/#"));
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        executorService.execute(sub);
-
         StaticData.mqttClient.setCallback(new MqttMessageCallback() {
             @Override
-            public void messageArrived(String s, final String s1) {
+            public void messageArrived(String topic, final String message) {
+                final Conversation conversation = new Conversation();
+                String[] topicParam = topic.split("/");
+                if("message".equals(topicParam[3])) {
+                    if("friend".equals(topicParam[4])) {
+                        User user = new User();
+                        user.setId(Integer.parseInt(topicParam[5]));
+                        user.setUsername("test1");
+                        user.setNickname("test1");
+                        conversation.setUser(user);
+                        conversation.setCurrentMessage(message);
+                    }
+                }
+
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this,s1,Toast.LENGTH_SHORT).show();
+                        messagePageListViewAdapter.addConversation(conversation);
                     }
                 });
             }
@@ -80,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initViewPager() {
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_message,null));
+        initMessagePage();
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_friend,null));
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_my,null));
         viewPager = findViewById(R.id.viewpager);
@@ -101,6 +103,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void initMessagePage() {
+        ListView listView = viewList.get(0).findViewById(R.id.listview);
+        listView.setAdapter(messagePageListViewAdapter = new MessagePageListViewAdapter(this));
     }
 
     private void initBottomNavigation() {

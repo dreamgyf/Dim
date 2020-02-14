@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:drawable="@drawable/ic_circle"
+    tools:ignore="NewApi">
+    <target
+        android:animation="@animator/animator_circle_loading_set"
+        android:name="circle"/>
+
+    <target
+        android:animation="@animator/animator_circle_rotation"
+        android:name="circlegroup"/>
+</animated-vector>

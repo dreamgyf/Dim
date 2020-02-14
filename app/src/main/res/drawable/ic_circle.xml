@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="30.0"
+    android:viewportHeight="30.0">
+
+    <path
+        android:name="circle_bg"
+        android:strokeColor="#50C175C7"
+        android:strokeWidth="1"
+        android:strokeLineCap="square"
+        android:trimPathEnd="1"
+        android:pathData="M 15,2
+                          A 13,13 0 1,1 14.9,2"/>
+
+    <group
+        android:name="circlegroup"
+        android:pivotY="15"
+        android:pivotX="15">
+        <path
+            android:name="circle"
+            android:strokeColor="#6633ff"
+            android:strokeWidth="1"
+            android:strokeLineCap="square"
+            android:pathData="M 15,2
+                          A 13,13 0 1,1 14.9,2"
+            android:trimPathEnd="0"/>
+    </group>
+
+    <path
+        android:name="hook"
+        android:strokeColor="#6633ff"
+        android:strokeWidth="1"
+        android:strokeLineCap="butt"
+        android:pathData="M 8,15
+                          L 14,20
+                          L 23,11"
+        android:trimPathEnd="0"/>
+
+    <path
+        android:name="x1"
+        android:strokeColor="#6633ff"
+        android:strokeWidth="1"
+        android:strokeLineCap="butt"
+        android:pathData="M 8,8
+                          L 22,22"
+        android:trimPathEnd="0"/>
+
+    <path
+        android:name="x2"
+        android:strokeColor="#6633ff"
+        android:strokeWidth="1"
+        android:strokeLineCap="butt"
+        android:pathData="M 22,8
+                          L 8,22"
+        android:trimPathEnd="0"/>
+</vector>
