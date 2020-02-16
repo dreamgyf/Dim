@@ -16,7 +16,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.dreamgyf.dim.data.StaticData;
-import com.dreamgyf.dim.entity.Data;
+import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.sharedpreferences.UserInfo;
 import com.dreamgyf.exception.MqttException;
 import com.dreamgyf.mqtt.MqttVersion;
@@ -26,6 +27,7 @@ import com.dreamgyf.mqtt.client.callback.MqttConnectCallback;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +39,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
@@ -75,7 +77,6 @@ public class LoginActivity extends AppCompatActivity {
         if(userInfo.get("username") != null) {
             login(userInfo.get("username"),userInfo.get("password"));
         }
-        StaticData.conversationList = new LinkedList<>();
     }
 
     private void initEditText() {
@@ -158,15 +159,21 @@ public class LoginActivity extends AppCompatActivity {
                             in.close();
                             final JsonObject jsonObject = new JsonParser().parse(resp).getAsJsonObject();
                             if("0".equals(jsonObject.get("code").getAsString())) {
+                                Gson gson = new Gson();
+                                //保存登录信息
                                 UserInfo.setUserInfo(LoginActivity.this,username,passwordSha256);
-                                StaticData.data = new Gson().fromJson(jsonObject.get("data"),Data.class);
+                                //保存信息
+                                JsonObject data = jsonObject.get("data").getAsJsonObject();
+                                StaticData.my = gson.fromJson(data.get("my"), User.class);
+                                StaticData.friendList = gson.fromJson(data.get("friendList"), new TypeToken<List<User>>(){}.getType());
+                                StaticData.groupList = gson.fromJson(data.get("groupList"), new TypeToken<List<Group>>(){}.getType());
                                 try {
-                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.data.getMy().getUsername()).setBroker("mq.tongxinmao.com").setPort(18831).build();
+                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setBroker("mq.tongxinmao.com").setPort(18831).build();
                                     StaticData.mqttClient.connect(new MqttConnectCallback() {
                                         @Override
                                         public void onSuccess() {
                                             try {
-                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.data.getMy().getId() + "/#"));
+                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.my.getId() + "/#"));
                                             } catch (MqttException e) {
                                                 e.printStackTrace();
                                             } catch (IOException e) {

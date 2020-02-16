@@ -10,7 +10,7 @@ public class User implements Serializable {
 
     private String nickname;
 
-    private String remark;
+    private String remarkName;
 
     public Integer getId() {
         return this.id;
@@ -36,12 +36,12 @@ public class User implements Serializable {
         this.nickname = nickname;
     }
 
-    public String getRemark() {
-        return this.remark;
+    public String getRemarkName() {
+        return this.remarkName;
     }
 
-    public void setRemark(String remark) {
-        this.remark = remark;
+    public void setRemarkName(String remarkName) {
+        this.remarkName = remarkName;
     }
 
 

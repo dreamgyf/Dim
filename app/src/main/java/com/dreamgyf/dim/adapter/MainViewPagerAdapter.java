@@ -10,7 +10,7 @@ import java.util.List;
 
 public class MainViewPagerAdapter extends PagerAdapter {
 
-    List<View> viewList;
+    private List<View> viewList;
 
     public MainViewPagerAdapter(List<View> viewList) {
         super();

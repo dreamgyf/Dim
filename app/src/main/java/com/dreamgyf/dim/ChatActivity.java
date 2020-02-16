@@ -1,0 +1,184 @@
+package com.dreamgyf.dim;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.dreamgyf.dim.adapter.ChatRecyclerViewAdapter;
+import com.dreamgyf.dim.broadcast.BroadcastActions;
+import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.entity.Message;
+import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.exception.MqttException;
+import com.dreamgyf.mqtt.client.callback.MqttPublishCallback;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ChatActivity extends AppCompatActivity {
+
+    private Handler handler = new Handler();
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+    private BroadcastReceiver receiver;
+
+    private User user;
+
+    private Group group;
+
+    private RecyclerView recyclerView;
+
+    private EditText textInput;
+
+    private ImageView sendButton;
+
+    private ChatRecyclerViewAdapter chatRecyclerViewAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_chat);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Intent intent = getIntent();
+        user = (User) intent.getSerializableExtra("user");
+        group = (Group) intent.getSerializableExtra("group");
+
+
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if(user != null) {
+            String username;
+            if(user.getRemarkName() != null) {
+                username = user.getRemarkName();
+            }
+            else if(user.getNickname() != null) {
+                username = user.getNickname();
+            }
+            else {
+                username = user.getUsername();
+            }
+            getSupportActionBar().setTitle(username);
+            recyclerView.setAdapter(chatRecyclerViewAdapter = new ChatRecyclerViewAdapter(user));
+            recyclerView.scrollToPosition(StaticData.friendMessageMap.get(user.getId()).size() - 1);
+        }
+        initRibbon();
+        initBroadcast();
+    }
+
+    private void initRibbon() {
+        textInput = findViewById(R.id.text_input);
+        sendButton = findViewById(R.id.send_button);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        String text = textInput.getText().toString();
+                        String topic = "/Dim/";
+                        if(user != null) {
+                            topic += user.getId() + "/message/friend/";
+                        }
+                        else if(group != null) {
+                            topic += group.getId() + "/message/group/";
+                        }
+                        topic += StaticData.my.getId();
+                        try {
+                            StaticData.mqttClient.publish(topic, text, new MqttPublishCallback() {
+                                @Override
+                                public void messageArrived(String topic, String message) {
+                                    //更新聊天数据
+                                    if(user != null) {
+                                        List<Message> messageList = StaticData.friendMessageMap.get(user.getId());
+                                        if(messageList == null)
+                                            messageList = new ArrayList<>();
+                                        Message m = new Message();
+                                        m.setUser(StaticData.my);
+                                        m.setType(Message.Type.SEND_TEXT);
+                                        m.setContent(message);
+                                        messageList.add(m);
+                                        StaticData.friendMessageMap.put(user.getId(),messageList);
+                                        handler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                chatRecyclerViewAdapter.notifyDataSetChanged();
+                                            }
+                                        });
+                                        //广播通知更新
+                                        Intent updateMessage = new Intent();
+                                        updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
+                                        updateMessage.putExtra("user",user);
+                                        sendBroadcast(updateMessage);
+                                    }
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (MqttException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                executorService.execute(runnable);
+            }
+        });
+    }
+
+    private void initBroadcast() {
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(BroadcastActions.UPDATE_MESSAGE.equals(intent.getAction())) {
+                    User u = (User) intent.getSerializableExtra("user");
+                    Group g = (Group) intent.getSerializableExtra("group");
+                    if(user != null && u != null && user.getId().equals(u.getId()))
+                        chatRecyclerViewAdapter.notifyDataSetChanged();
+                    else if(group != null && g != null && group.getId().equals(g.getId()))
+                        chatRecyclerViewAdapter.notifyDataSetChanged();
+                }
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BroadcastActions.UPDATE_MESSAGE);
+        registerReceiver(receiver,intentFilter);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:   //返回键的id
+                this.finish();
+                return false;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(receiver);
+        super.onDestroy();
+    }
+}

@@ -46,7 +46,7 @@ public class MessagePageListViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
         if(convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.listview_message_page,null);
+            convertView = LayoutInflater.from(context).inflate(R.layout.listview_conversation_item,null);
             viewHolder = new ViewHolder();
             viewHolder.avatar = convertView.findViewById(R.id.avatar);
             viewHolder.name = convertView.findViewById(R.id.name);
@@ -59,8 +59,8 @@ public class MessagePageListViewAdapter extends BaseAdapter {
         synchronized (StaticData.conversationListLock) {
             Conversation conversation = StaticData.conversationList.get(position);
             String username;
-            if(conversation.getUser().getRemark() != null) {
-                username = conversation.getUser().getRemark();
+            if(conversation.getUser().getRemarkName() != null) {
+                username = conversation.getUser().getRemarkName();
             }
             else if(conversation.getUser().getNickname() != null) {
                 username = conversation.getUser().getNickname();
