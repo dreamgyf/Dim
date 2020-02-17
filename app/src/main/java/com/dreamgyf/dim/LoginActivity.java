@@ -38,6 +38,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                                 JsonObject data = jsonObject.get("data").getAsJsonObject();
                                 StaticData.my = gson.fromJson(data.get("my"), User.class);
                                 StaticData.friendList = gson.fromJson(data.get("friendList"), new TypeToken<List<User>>(){}.getType());
+                                Collections.sort(StaticData.friendList);
                                 StaticData.groupList = gson.fromJson(data.get("groupList"), new TypeToken<List<Group>>(){}.getType());
                                 try {
                                     StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setBroker("mq.tongxinmao.com").setPort(18831).build();
@@ -173,7 +175,7 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess() {
                                             try {
-                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.my.getId() + "/#"));
+                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.my.getId() + "/#").setQoS(1));
                                             } catch (MqttException e) {
                                                 e.printStackTrace();
                                             } catch (IOException e) {

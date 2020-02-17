@@ -1,6 +1,9 @@
 package com.dreamgyf.dim;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -13,8 +16,11 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
+import com.dreamgyf.dim.adapter.FriendRecyclerViewAdapter;
 import com.dreamgyf.dim.adapter.MainViewPagerAdapter;
 import com.dreamgyf.dim.adapter.MessagePageListViewAdapter;
 import com.dreamgyf.dim.broadcast.BroadcastActions;
@@ -57,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
 
     private MessagePageListViewAdapter messagePageListViewAdapter;
+
+    private BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,12 +171,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        initBroadcast();
     }
 
     private void initViewPager() {
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_message,null));
         initMessagePage();
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_friend,null));
+        initFriendPage();
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_my,null));
         viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(new MainViewPagerAdapter(viewList));
@@ -182,6 +193,17 @@ public class MainActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 if(bottomNavigationView != null)
                     bottomNavigationView.getMenu().getItem(position).setChecked(true);
+                switch (position) {
+                    case 0:
+                        getSupportActionBar().setTitle("消息");
+                        break;
+                    case 1:
+                        getSupportActionBar().setTitle("好友");
+                        break;
+                    case 2:
+                        getSupportActionBar().setTitle("我");
+                        break;
+                }
             }
 
             @Override
@@ -208,6 +230,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void initFriendPage() {
+        RecyclerView recyclerView = viewList.get(1).findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new FriendRecyclerViewAdapter());
+    }
+
     private void initBottomNavigation() {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -229,6 +257,21 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void initBroadcast() {
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(BroadcastActions.UPDATE_CONVERSATION.equals(intent.getAction())) {
+                    Conversation conversation = (Conversation) intent.getSerializableExtra("conversation");
+                    messagePageListViewAdapter.addConversation(conversation);
+                }
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BroadcastActions.UPDATE_CONVERSATION);
+        registerReceiver(receiver,intentFilter);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu,menu);
@@ -248,5 +291,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(receiver);
+        super.onDestroy();
     }
 }

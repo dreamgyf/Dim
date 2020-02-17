@@ -20,10 +20,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dreamgyf.dim.adapter.ChatRecyclerViewAdapter;
 import com.dreamgyf.dim.broadcast.BroadcastActions;
 import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
 import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.exception.MqttException;
+import com.dreamgyf.mqtt.client.MqttPublishOptions;
 import com.dreamgyf.mqtt.client.callback.MqttPublishCallback;
 
 import java.io.IOException;
@@ -81,7 +83,11 @@ public class ChatActivity extends AppCompatActivity {
             }
             getSupportActionBar().setTitle(username);
             recyclerView.setAdapter(chatRecyclerViewAdapter = new ChatRecyclerViewAdapter(user));
-            recyclerView.scrollToPosition(StaticData.friendMessageMap.get(user.getId()).size() - 1);
+            if(StaticData.friendMessageMap.get(user.getId()) == null) {
+                StaticData.friendMessageMap.put(user.getId(),new ArrayList<>());
+            }
+            if(!StaticData.friendMessageMap.get(user.getId()).isEmpty())
+                recyclerView.scrollToPosition(StaticData.friendMessageMap.get(user.getId()).size() - 1);
         }
         initRibbon();
         initBroadcast();
@@ -97,6 +103,12 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         String text = textInput.getText().toString();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                textInput.setText("");
+                            }
+                        });
                         String topic = "/Dim/";
                         if(user != null) {
                             topic += user.getId() + "/message/friend/";
@@ -106,7 +118,7 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         topic += StaticData.my.getId();
                         try {
-                            StaticData.mqttClient.publish(topic, text, new MqttPublishCallback() {
+                            StaticData.mqttClient.publish(topic, text, new MqttPublishOptions().setQoS(1), new MqttPublishCallback() {
                                 @Override
                                 public void messageArrived(String topic, String message) {
                                     //更新聊天数据
@@ -120,17 +132,20 @@ public class ChatActivity extends AppCompatActivity {
                                         m.setContent(message);
                                         messageList.add(m);
                                         StaticData.friendMessageMap.put(user.getId(),messageList);
-                                        handler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                chatRecyclerViewAdapter.notifyDataSetChanged();
-                                            }
-                                        });
                                         //广播通知更新
                                         Intent updateMessage = new Intent();
                                         updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
                                         updateMessage.putExtra("user",user);
                                         sendBroadcast(updateMessage);
+
+                                        Conversation conversation = new Conversation();
+                                        conversation.setUser(user);
+                                        conversation.setGroup(group);
+                                        conversation.setCurrentMessage(message);
+                                        Intent updateConversation = new Intent();
+                                        updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
+                                        updateConversation.putExtra("conversation",conversation);
+                                        sendBroadcast(updateConversation);
                                     }
                                 }
                             });

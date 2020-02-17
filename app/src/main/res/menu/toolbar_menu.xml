@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/addFriend"
-        android:title="添加好友"
+        android:title="添加好友/群"
         android:icon="@drawable/ic_friend"
         app:showAsAction="never"/>
 </menu>

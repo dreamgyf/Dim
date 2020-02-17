@@ -2,7 +2,7 @@ package com.dreamgyf.dim.entity;
 
 import java.io.Serializable;
 
-public class User implements Serializable {
+public class User implements Serializable,Comparable<User> {
 
     private Integer id;
 
@@ -44,5 +44,28 @@ public class User implements Serializable {
         this.remarkName = remarkName;
     }
 
-
+    @Override
+    public int compareTo(User user) {
+        String thisUsername;
+        if(this.remarkName != null) {
+            thisUsername = this.remarkName;
+        }
+        else if(this.nickname != null) {
+            thisUsername = this.nickname;
+        }
+        else {
+            thisUsername = this.username;
+        }
+        String thatUsername;
+        if(user.remarkName != null) {
+            thatUsername = user.remarkName;
+        }
+        else if(user.nickname != null) {
+            thatUsername = user.nickname;
+        }
+        else {
+            thatUsername = user.username;
+        }
+        return thisUsername.compareTo(thatUsername);
+    }
 }

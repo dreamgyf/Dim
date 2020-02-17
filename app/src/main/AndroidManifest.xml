@@ -12,10 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ChatActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
+        <activity android:name=".AddFriendOrGroupActivity"></activity>
+        <activity
+            android:name=".ChatActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".LoginActivity"
+        <activity
+            android:name=".LoginActivity"
             android:theme="@style/LoginTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
