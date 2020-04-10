@@ -118,7 +118,7 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         topic += StaticData.my.getId();
                         try {
-                            StaticData.mqttClient.publish(topic, text, new MqttPublishOptions().setQoS(1), new MqttPublishCallback() {
+                            StaticData.mqttClient.publish(topic, text, new MqttPublishOptions().setQoS(2), new MqttPublishCallback() {
                                 @Override
                                 public void messageArrived(String topic, String message) {
                                     //更新聊天数据

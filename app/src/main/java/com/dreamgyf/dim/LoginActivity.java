@@ -170,12 +170,12 @@ public class LoginActivity extends AppCompatActivity {
                                 Collections.sort(StaticData.friendList);
                                 StaticData.groupList = gson.fromJson(data.get("groupList"), new TypeToken<List<Group>>(){}.getType());
                                 try {
-                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setBroker("mq.tongxinmao.com").setPort(18831).build();
+                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setWillQoS(2).setCleanSession(false).setBroker("mq.tongxinmao.com").setPort(18831).build();
                                     StaticData.mqttClient.connect(new MqttConnectCallback() {
                                         @Override
                                         public void onSuccess() {
                                             try {
-                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.my.getId() + "/#").setQoS(1));
+                                                StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + StaticData.my.getId() + "/#").setQoS(2));
                                             } catch (MqttException e) {
                                                 e.printStackTrace();
                                             } catch (IOException e) {

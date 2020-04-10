@@ -294,6 +294,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.addFriendButton:
+                Intent intent = new Intent(this,AddFriendOrGroupActivity.class);
+                startActivity(intent);
+                break;
+        }
+        return true;
+    }
+
+    @Override
     protected void onDestroy() {
         unregisterReceiver(receiver);
         super.onDestroy();

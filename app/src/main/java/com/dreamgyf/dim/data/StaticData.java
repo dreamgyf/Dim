@@ -33,5 +33,5 @@ public class StaticData {
 
     public static final Object groupMessageMapLock = new Object();
 
-    public final static String DOMAIN = "http://www.newbee.cf:8088";
+    public final static String DOMAIN = "http://47.100.255.133:8088";
 }

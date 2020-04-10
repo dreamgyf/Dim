@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/addFriend"
+        android:id="@+id/addFriendButton"
         android:title="添加好友/群"
         android:icon="@drawable/ic_friend"
         app:showAsAction="never"/>
