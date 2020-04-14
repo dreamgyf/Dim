@@ -48,6 +48,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
 
+    private boolean isRecyclerViewScrolling = false;
+
     private EditText textInput;
 
     private ImageView sendButton;
@@ -70,6 +72,12 @@ public class ChatActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                isRecyclerViewScrolling = !(newState == RecyclerView.SCROLL_STATE_IDLE);
+            }
+        });
         if(user != null) {
             String username;
             if(user.getRemarkName() != null) {
@@ -165,7 +173,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void scrollToBottom() {
-        recyclerView.scrollToPosition(chatRecyclerViewAdapter.getItemCount() - 1);
+        if(!isRecyclerViewScrolling)
+            recyclerView.smoothScrollToPosition(chatRecyclerViewAdapter.getItemCount() - 1);
     }
 
     private void initBroadcast() {
