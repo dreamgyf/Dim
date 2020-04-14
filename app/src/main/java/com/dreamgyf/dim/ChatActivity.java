@@ -173,7 +173,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void scrollToBottom() {
-        if(!isRecyclerViewScrolling)
+        if(!isRecyclerViewScrolling && chatRecyclerViewAdapter.getItemCount() != 0)
             recyclerView.smoothScrollToPosition(chatRecyclerViewAdapter.getItemCount() - 1);
     }
 
