@@ -91,6 +91,7 @@ public class ChatActivity extends AppCompatActivity {
         }
         initRibbon();
         initBroadcast();
+        scrollToBottom();
     }
 
     private void initRibbon() {
@@ -99,10 +100,12 @@ public class ChatActivity extends AppCompatActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String text = textInput.getText().toString();
+                if("".equals(text))
+                    return;
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        String text = textInput.getText().toString();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -142,9 +145,9 @@ public class ChatActivity extends AppCompatActivity {
                                         conversation.setUser(user);
                                         conversation.setGroup(group);
                                         conversation.setCurrentMessage(message);
+                                        StaticData.addConversation(conversation);
                                         Intent updateConversation = new Intent();
                                         updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
-                                        updateConversation.putExtra("conversation",conversation);
                                         sendBroadcast(updateConversation);
                                     }
                                 }
@@ -161,6 +164,10 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    private void scrollToBottom() {
+        recyclerView.scrollToPosition(chatRecyclerViewAdapter.getItemCount() - 1);
+    }
+
     private void initBroadcast() {
         receiver = new BroadcastReceiver() {
             @Override
@@ -172,6 +179,7 @@ public class ChatActivity extends AppCompatActivity {
                         chatRecyclerViewAdapter.notifyDataSetChanged();
                     else if(group != null && g != null && group.getId().equals(g.getId()))
                         chatRecyclerViewAdapter.notifyDataSetChanged();
+                    scrollToBottom();
                 }
             }
         };

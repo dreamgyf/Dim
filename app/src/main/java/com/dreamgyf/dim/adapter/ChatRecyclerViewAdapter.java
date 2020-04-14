@@ -99,4 +99,5 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             message = itemView.findViewById(R.id.message);
         }
     }
+
 }

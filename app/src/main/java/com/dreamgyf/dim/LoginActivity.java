@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -15,10 +16,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.dreamgyf.dim.broadcast.BroadcastActions;
 import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.entity.Message;
 import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.sharedpreferences.UserInfo;
+import com.dreamgyf.dim.utils.MqttTopicAnalyzer;
 import com.dreamgyf.exception.MqttException;
 import com.dreamgyf.mqtt.MqttVersion;
 import com.dreamgyf.mqtt.client.MqttClient;
@@ -38,6 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -170,7 +176,39 @@ public class LoginActivity extends AppCompatActivity {
                                 Collections.sort(StaticData.friendList);
                                 StaticData.groupList = gson.fromJson(data.get("groupList"), new TypeToken<List<Group>>(){}.getType());
                                 try {
-                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setWillQoS(2).setCleanSession(false).setBroker("mq.tongxinmao.com").setPort(18831).build();
+                                    StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setCleanSession(false).setBroker("mq.tongxinmao.com").setPort(18831).build();
+                                    StaticData.mqttClient.setCallback((topic, message) -> {
+                                        Log.e("Login Message",message);
+                                        MqttTopicAnalyzer.Result topicRes = MqttTopicAnalyzer.analyze(topic);
+                                        switch (topicRes.getType()) {
+                                            case MqttTopicAnalyzer.RECEIVE_FRIEND_MESSAGE: {
+                                                for(User friend : StaticData.friendList) {
+                                                    if(friend.getId().equals(topicRes.getFromId())) {
+                                                        Conversation conversation = new Conversation();
+                                                        //更新会话数据
+                                                        conversation.setUser(friend);
+                                                        conversation.setCurrentMessage(message);
+                                                        StaticData.addConversation(conversation);
+                                                        Intent updateConversation = new Intent();
+                                                        updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
+                                                        sendBroadcast(updateConversation);
+                                                        //更新聊天数据
+                                                        List<Message> messageList = StaticData.friendMessageMap.get(topicRes.getFromId());
+                                                        if(messageList == null)
+                                                            messageList = new ArrayList<>();
+                                                        Message m = new Message();
+                                                        m.setUser(friend);
+                                                        m.setType(Message.Type.RECEIVE_TEXT);
+                                                        m.setContent(message);
+                                                        messageList.add(m);
+                                                        StaticData.friendMessageMap.put(topicRes.getFromId(),messageList);
+                                                        break;
+                                                    }
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    });
                                     StaticData.mqttClient.connect(new MqttConnectCallback() {
                                         @Override
                                         public void onSuccess() {

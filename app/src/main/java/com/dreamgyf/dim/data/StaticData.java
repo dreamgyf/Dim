@@ -34,4 +34,16 @@ public class StaticData {
     public static final Object groupMessageMapLock = new Object();
 
     public final static String DOMAIN = "http://47.100.255.133:8088";
+
+    public static void addConversation(Conversation conversation) {
+        synchronized (StaticData.conversationListLock) {
+            for(int i = 0;i < StaticData.conversationList.size();i++) {
+                if(conversation.getUser().getId().equals(StaticData.conversationList.get(i).getUser().getId())) {
+                    StaticData.conversationList.remove(i);
+                    break;
+                }
+            }
+            StaticData.conversationList.add(0,conversation);
+        }
+    }
 }
