@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
     private void initFriendPage() {
         RecyclerView recyclerView = viewList.get(1).findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new FriendRecyclerViewAdapter());
+        recyclerView.setAdapter(new FriendRecyclerViewAdapter(this));
     }
 
     private void initBottomNavigation() {

@@ -46,7 +46,7 @@ public class MessagePageListViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
         if(convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.listview_conversation_item,null);
+            convertView = LayoutInflater.from(context).inflate(R.layout.listview_conversation_item,parent,false);
             viewHolder = new ViewHolder();
             viewHolder.avatar = convertView.findViewById(R.id.avatar);
             viewHolder.name = convertView.findViewById(R.id.name);

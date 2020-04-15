@@ -66,7 +66,7 @@ public class AddFriendOrGroupActivity extends AppCompatActivity {
         searchFriend = findViewById(R.id.searchFriend);
         searchFriend.setIconifiedByDefault(false);
         friendListView = findViewById(R.id.friendListView);
-        friendListView.setAdapter(searchFriendListViewAdapter = new SearchFriendListViewAdapter(friendList));
+        friendListView.setAdapter(searchFriendListViewAdapter = new SearchFriendListViewAdapter(this,friendList));
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

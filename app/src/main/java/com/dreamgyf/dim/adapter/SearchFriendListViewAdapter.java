@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,14 +14,17 @@ import java.util.List;
 
 public class SearchFriendListViewAdapter extends BaseAdapter {
 
+    private Context context;
+
     private List<User> dataList;
 
-    public SearchFriendListViewAdapter(List<User> dataList) {
+    public SearchFriendListViewAdapter(Context context, List<User> dataList) {
+        this.context = context;
         this.dataList = dataList;
     }
 
     private class ViewHolder {
-        public TextView userid;
+        public TextView userId;
         public TextView username;
         public TextView nickname;
     }
@@ -44,9 +48,9 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder = null;
         if(convertView == null) {
-            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.listview_search_friend_item,null,false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.listview_search_friend_item,parent,false);
             viewHolder = new ViewHolder();
-            viewHolder.userid = convertView.findViewById(R.id.userid);
+            viewHolder.userId = convertView.findViewById(R.id.userid);
             viewHolder.nickname = convertView.findViewById(R.id.nickname);
             viewHolder.username = convertView.findViewById(R.id.username);
             convertView.setTag(viewHolder);
@@ -54,7 +58,7 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
         else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-        viewHolder.userid.setText("(ID:" + dataList.get(position).getId() + ")");
+        viewHolder.userId.setText("(ID:" + dataList.get(position).getId() + ")");
         viewHolder.nickname.setText(dataList.get(position).getNickname());
         viewHolder.username.setText(dataList.get(position).getUsername());
         return convertView;

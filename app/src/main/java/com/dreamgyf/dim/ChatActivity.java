@@ -90,7 +90,7 @@ public class ChatActivity extends AppCompatActivity {
                 username = user.getUsername();
             }
             getSupportActionBar().setTitle(username);
-            recyclerView.setAdapter(chatRecyclerViewAdapter = new ChatRecyclerViewAdapter(user));
+            recyclerView.setAdapter(chatRecyclerViewAdapter = new ChatRecyclerViewAdapter(this,user));
             if(StaticData.friendMessageMap.get(user.getId()) == null) {
                 StaticData.friendMessageMap.put(user.getId(),new ArrayList<>());
             }

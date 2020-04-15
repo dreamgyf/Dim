@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.adapter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,8 @@ import com.dreamgyf.dim.data.StaticData;
 
 public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecyclerViewAdapter.ViewHolder> {
 
+    private Context context;
+
     class ViewHolder extends RecyclerView.ViewHolder {
         private ImageView avatar;
         private TextView name;
@@ -26,14 +29,15 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
         }
     }
 
-    public FriendRecyclerViewAdapter() {
+    public FriendRecyclerViewAdapter(Context context) {
         super();
+        this.context = context;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_friend_item,null,false);
+        View view = LayoutInflater.from(context).inflate(R.layout.recycler_view_friend_item,parent,false);
         return new ViewHolder(view);
     }
 

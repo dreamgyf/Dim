@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,24 +20,26 @@ import java.util.List;
 
 public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-
-
     public static class Type {
         public static final int FRIEND = 0;
         public static final int GROUP = 1;
     }
 
+    private Context context;
+
     private User user;
 
     private Group group;
 
-    public ChatRecyclerViewAdapter(User user) {
+    public ChatRecyclerViewAdapter(Context context, User user) {
         super();
+        this.context = context;
         this.user = user;
     }
 
-    public ChatRecyclerViewAdapter(Group group) {
+    public ChatRecyclerViewAdapter(Context context, Group group) {
         super();
+        this.context = context;
         this.group = group;
     }
 
@@ -58,7 +61,7 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(viewType,null,false);
+        View view = LayoutInflater.from(context).inflate(viewType,parent,false);
         switch (viewType) {
             case Message.Type.SEND_TEXT:
             case Message.Type.RECEIVE_TEXT:
