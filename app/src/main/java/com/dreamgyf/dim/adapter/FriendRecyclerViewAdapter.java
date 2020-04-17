@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamgyf.dim.ChatActivity;
 import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 
 public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecyclerViewAdapter.ViewHolder> {
@@ -54,6 +55,9 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
             username = StaticData.friendList.get(position).getUsername();
         }
         holder.name.setText(username);
+        //设置头像
+        GetAvatarTask getAvatarTask = new GetAvatarTask(context,holder.avatar);
+        getAvatarTask.execute(StaticData.friendList.get(position).getAvatarId());
         //点击事件
         holder.itemView.setOnClickListener((view) -> {
             Intent intent = new Intent(view.getContext(), ChatActivity.class);

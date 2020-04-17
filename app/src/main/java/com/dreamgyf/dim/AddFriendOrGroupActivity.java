@@ -1,9 +1,11 @@
 package com.dreamgyf.dim;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -70,6 +72,7 @@ public class AddFriendOrGroupActivity extends AppCompatActivity {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                searchFriend.clearFocus();
                 friendList.clear();
                 searchFriendListViewAdapter.notifyDataSetChanged();
                 AsyncTask<String,Void,List<User>> task = new AsyncTask<String, Void, List<User>>() {
@@ -90,7 +93,7 @@ public class AddFriendOrGroupActivity extends AppCompatActivity {
                     protected List<User> doInBackground(String... strings) {
                         List<User> res = null;
                         try {
-                            URL url = new URL(StaticData.DOMAIN + "/search/friend?keyword=" + strings[0]);
+                            URL url = new URL(StaticData.DOMAIN + "/friend/search?myId=" + StaticData.my.getId() + "&keyword=" + strings[0]);
                             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                             httpURLConnection.setRequestMethod("POST");
                             if(httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -121,6 +124,15 @@ public class AddFriendOrGroupActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
+            }
+        });
+        friendListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                User user = friendList.get(position);
+                Intent intent = new Intent(AddFriendOrGroupActivity.this,UserInfoActivity.class);
+                intent.putExtra("user",user);
+                startActivity(intent);
             }
         });
     }

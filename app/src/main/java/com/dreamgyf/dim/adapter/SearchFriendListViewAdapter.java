@@ -5,9 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.entity.User;
 
 import java.util.List;
@@ -24,9 +26,10 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
     }
 
     private class ViewHolder {
-        public TextView userId;
-        public TextView username;
-        public TextView nickname;
+        private ImageView avatar;
+        private TextView userId;
+        private TextView username;
+        private TextView nickname;
     }
 
     @Override
@@ -50,6 +53,7 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
         if(convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.listview_search_friend_item,parent,false);
             viewHolder = new ViewHolder();
+            viewHolder.avatar = convertView.findViewById(R.id.avatar);
             viewHolder.userId = convertView.findViewById(R.id.userid);
             viewHolder.nickname = convertView.findViewById(R.id.nickname);
             viewHolder.username = convertView.findViewById(R.id.username);
@@ -58,6 +62,8 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
         else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
+        GetAvatarTask getAvatarTask = new GetAvatarTask(context,viewHolder.avatar);
+        getAvatarTask.execute(dataList.get(position).getAvatarId());
         viewHolder.userId.setText("(ID:" + dataList.get(position).getId() + ")");
         viewHolder.nickname.setText(dataList.get(position).getNickname());
         viewHolder.username.setText(dataList.get(position).getUsername());

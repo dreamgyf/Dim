@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
@@ -50,6 +51,9 @@ public class ChatRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             case Message.Type.RECEIVE_TEXT:
                 if(user != null) {
                     ((TextViewHolder) holder).message.setText(StaticData.friendMessageMap.get(user.getId()).get(position).getContent());
+                    //设置头像
+                    GetAvatarTask getAvatarTask = new GetAvatarTask(context,((TextViewHolder) holder).avatar);
+                    getAvatarTask.execute(user.getAvatarId());
                 }
                 else {
                     ((TextViewHolder) holder).message.setText(StaticData.groupMessageMap.get(group.getId()).get(position).getContent());

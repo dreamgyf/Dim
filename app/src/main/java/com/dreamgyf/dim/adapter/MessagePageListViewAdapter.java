@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
 
@@ -73,6 +74,9 @@ public class MessagePageListViewAdapter extends BaseAdapter {
                 viewHolder.message.setText(username + ":" + conversation.getCurrentMessage());
             }
             else {
+                //设置头像
+                GetAvatarTask getAvatarTask = new GetAvatarTask(context,viewHolder.avatar);
+                getAvatarTask.execute(conversation.getUser().getAvatarId());
                 viewHolder.name.setText(username);
                 viewHolder.message.setText(conversation.getCurrentMessage());
             }

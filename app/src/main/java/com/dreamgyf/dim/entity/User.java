@@ -12,6 +12,8 @@ public class User implements Serializable,Comparable<User> {
 
     private String remarkName;
 
+    private Integer avatarId;
+
     public Integer getId() {
         return this.id;
     }
@@ -42,6 +44,14 @@ public class User implements Serializable,Comparable<User> {
 
     public void setRemarkName(String remarkName) {
         this.remarkName = remarkName;
+    }
+
+    public Integer getAvatarId() {
+        return avatarId;
+    }
+
+    public void setAvatarId(Integer avatarId) {
+        this.avatarId = avatarId;
     }
 
     @Override

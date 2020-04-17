@@ -24,6 +24,7 @@ import com.dreamgyf.dim.entity.Message;
 import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.sharedpreferences.UserInfo;
 import com.dreamgyf.dim.utils.MqttTopicAnalyzer;
+import com.dreamgyf.dim.utils.PermissionsUtils;
 import com.dreamgyf.exception.MqttException;
 import com.dreamgyf.mqtt.MqttVersion;
 import com.dreamgyf.mqtt.client.MqttClient;
@@ -77,6 +78,7 @@ public class LoginActivity extends AppCompatActivity {
 
         initData();
 
+        PermissionsUtils.verifyStoragePermissions(this);
     }
 
     private void initData() {

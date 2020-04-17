@@ -3,6 +3,8 @@
     package="com.dreamgyf.dim">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +14,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".AddFriendOrGroupActivity"></activity>
+        <activity android:name=".UserInfoActivity"></activity>
+        <activity android:name=".AddFriendOrGroupActivity" />
         <activity
             android:name=".ChatActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" />
