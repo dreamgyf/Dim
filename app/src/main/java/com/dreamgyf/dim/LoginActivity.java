@@ -23,7 +23,7 @@ import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
 import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.sharedpreferences.UserInfo;
-import com.dreamgyf.dim.utils.MqttTopicAnalyzer;
+import com.dreamgyf.dim.utils.MqttTopicUtils;
 import com.dreamgyf.dim.utils.PermissionsUtils;
 import com.dreamgyf.exception.MqttException;
 import com.dreamgyf.mqtt.MqttVersion;
@@ -181,11 +181,11 @@ public class LoginActivity extends AppCompatActivity {
                                     StaticData.mqttClient = new MqttClient.Builder().setVersion(MqttVersion.V_3_1_1).setClientId("Dim" + StaticData.my.getUsername()).setCleanSession(false).setBroker("mq.tongxinmao.com").setPort(18831).build();
                                     StaticData.mqttClient.setCallback((topic, message) -> {
                                         Log.e("Login Message",message);
-                                        MqttTopicAnalyzer.Result topicRes = MqttTopicAnalyzer.analyze(topic);
-                                        switch (topicRes.getType()) {
-                                            case MqttTopicAnalyzer.RECEIVE_FRIEND_MESSAGE: {
+                                        MqttTopicUtils.Result resultRes = MqttTopicUtils.analyze(topic);
+                                        switch (resultRes.getType()) {
+                                            case MqttTopicUtils.RECEIVE_FRIEND_MESSAGE: {
                                                 for(User friend : StaticData.friendList) {
-                                                    if(friend.getId().equals(topicRes.getFromId())) {
+                                                    if(friend.getId().equals(resultRes.getFromId())) {
                                                         Conversation conversation = new Conversation();
                                                         //更新会话数据
                                                         conversation.setUser(friend);
@@ -195,7 +195,7 @@ public class LoginActivity extends AppCompatActivity {
                                                         updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
                                                         sendBroadcast(updateConversation);
                                                         //更新聊天数据
-                                                        List<Message> messageList = StaticData.friendMessageMap.get(topicRes.getFromId());
+                                                        List<Message> messageList = StaticData.friendMessageMap.get(resultRes.getFromId());
                                                         if(messageList == null)
                                                             messageList = new ArrayList<>();
                                                         Message m = new Message();
@@ -203,7 +203,7 @@ public class LoginActivity extends AppCompatActivity {
                                                         m.setType(Message.Type.RECEIVE_TEXT);
                                                         m.setContent(message);
                                                         messageList.add(m);
-                                                        StaticData.friendMessageMap.put(topicRes.getFromId(),messageList);
+                                                        StaticData.friendMessageMap.put(resultRes.getFromId(),messageList);
                                                         break;
                                                     }
                                                 }

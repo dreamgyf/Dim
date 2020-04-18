@@ -4,123 +4,66 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AddFriendOrGroupActivity">
+    tools:context=".AddFriendOrGroupActivity"
+    android:background="@color/chatBackground">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        app:title="添加"
+        android:background="@color/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/OverflowStyle">
+
+    </androidx.appcompat.widget.Toolbar>
 
     <LinearLayout
-        android:id="@+id/top"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:gravity="center"
-        android:background="@color/colorPrimary">
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        android:orientation="vertical"
+        android:paddingTop="50dp">
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:gravity="center"
-            android:background="@drawable/shape_add_friend_or_group_button">
-            <TextView
-                android:id="@+id/addFriendButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:paddingLeft="15dp"
-                android:paddingRight="10dp"
-                android:text="加好友"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"/>
-            <View
-                android:layout_width="1dp"
-                android:background="#FFFFFF"
-                android:layout_height="match_parent"/>
-            <TextView
-                android:id="@+id/addGroupButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:paddingLeft="10dp"
-                android:paddingRight="15dp"
-                android:text="加群"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"/>
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="填写验证信息"/>
 
+        <EditText
+            android:id="@+id/verify_text"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:gravity="top|start"
+            android:layout_marginTop="10dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:background="@android:color/white"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:singleLine="true"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="设置备注"/>
+
+        <EditText
+            android:id="@+id/remark_text"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:background="@android:color/white"
+            android:singleLine="true"/>
     </LinearLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/content"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/top"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/addFriendView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintTop_toTopOf="@+id/content"
-            app:layout_constraintBottom_toBottomOf="@+id/content"
-            app:layout_constraintLeft_toLeftOf="@+id/content"
-            app:layout_constraintRight_toRightOf="@+id/content">
-
-            <SearchView
-                android:id="@+id/searchFriend"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                app:layout_constraintTop_toTopOf="@+id/addFriendView"
-                app:layout_constraintLeft_toLeftOf="@+id/addFriendView"
-                app:layout_constraintRight_toRightOf="@+id/addFriendView"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:background="@drawable/shape_search"
-                android:queryHint="用户ID/用户名/昵称"/>
-
-            <ListView
-                android:id="@+id/friendListView"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintTop_toBottomOf="@+id/searchFriend"
-                app:layout_constraintBottom_toBottomOf="@id/addFriendView"
-                app:layout_constraintLeft_toLeftOf="@+id/addFriendView"
-                app:layout_constraintRight_toRightOf="@+id/addFriendView"
-                android:layout_marginTop="10dp"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:visibility="invisible"
-            android:id="@+id/addGroupView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintTop_toTopOf="@+id/content"
-            app:layout_constraintBottom_toBottomOf="@+id/content"
-            app:layout_constraintLeft_toLeftOf="@+id/content"
-            app:layout_constraintRight_toRightOf="@+id/content">
-
-            <SearchView
-                android:id="@+id/searchGroup"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                app:layout_constraintTop_toTopOf="@+id/addGroupView"
-                app:layout_constraintLeft_toLeftOf="@+id/addGroupView"
-                app:layout_constraintRight_toRightOf="@+id/addGroupView"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:background="@drawable/shape_search"
-                android:queryHint="群ID/群名"/>
-
-            <ListView
-                android:id="@+id/groupListView"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintTop_toBottomOf="@+id/searchGroup"
-                app:layout_constraintBottom_toBottomOf="@id/addGroupView"
-                app:layout_constraintLeft_toLeftOf="@+id/addGroupView"
-                app:layout_constraintRight_toRightOf="@+id/addGroupView"
-                android:layout_marginTop="10dp"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

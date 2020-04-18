@@ -31,7 +31,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/nickname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="300dp"
@@ -41,7 +41,7 @@
                 android:singleLine="true" />
 
             <TextView
-                android:id="@+id/textView2"
+                android:id="@+id/username"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="300dp"

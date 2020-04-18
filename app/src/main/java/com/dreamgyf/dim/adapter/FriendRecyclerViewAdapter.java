@@ -11,8 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dreamgyf.dim.ChatActivity;
 import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.UserInfoActivity;
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 
@@ -60,9 +60,9 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
         getAvatarTask.execute(StaticData.friendList.get(position).getAvatarId());
         //点击事件
         holder.itemView.setOnClickListener((view) -> {
-            Intent intent = new Intent(view.getContext(), ChatActivity.class);
+            Intent intent = new Intent(view.getContext(), UserInfoActivity.class);
             intent.putExtra("user",StaticData.friendList.get(position));
-            view.getContext().startActivity(intent);
+            context.startActivity(intent);
         });
     }
 

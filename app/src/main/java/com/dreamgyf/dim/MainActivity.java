@@ -1,9 +1,12 @@
 package com.dreamgyf.dim;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -17,6 +20,7 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
@@ -30,7 +34,7 @@ import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
 import com.dreamgyf.dim.entity.User;
-import com.dreamgyf.dim.utils.MqttTopicAnalyzer;
+import com.dreamgyf.dim.utils.MqttTopicUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -53,6 +57,10 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
+    private MainApplication application;
+
+    private NotificationManager notificationManager;
+
     private Handler handler = new Handler();
 
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -72,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        application = (MainApplication) getApplication();
+        notificationManager = application.getNotificationManager();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -80,13 +91,33 @@ public class MainActivity extends AppCompatActivity {
 
         StaticData.mqttClient.setCallback((topic, message) -> {
             Log.e("Main Message",message);
-            MqttTopicAnalyzer.Result topicRes = MqttTopicAnalyzer.analyze(topic);
-            switch (topicRes.getType()) {
-                case MqttTopicAnalyzer.RECEIVE_FRIEND_MESSAGE: {
+            MqttTopicUtils.Result resultRes = MqttTopicUtils.analyze(topic);
+            switch (resultRes.getType()) {
+                case MqttTopicUtils.RECEIVE_FRIEND_MESSAGE: {
                     for(User friend : StaticData.friendList) {
-                        if(friend.getId().equals(topicRes.getFromId())) {
-                            Conversation conversation = new Conversation();
+                        if(friend.getId().equals(resultRes.getFromId())) {
+                            if(application.isAppBackground()) {
+                                String username;
+                                if(friend.getRemarkName() != null) {
+                                    username = friend.getRemarkName();
+                                }
+                                else if(friend.getNickname() != null) {
+                                    username = friend.getNickname();
+                                }
+                                else {
+                                    username = friend.getUsername();
+                                }
+                                //通知
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"Message");
+                                Notification notification = builder.setContentTitle(username)
+                                        .setContentText(message)
+                                        .setSmallIcon(R.drawable.small_logo)
+                                        .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.small_logo)).build();
+                                notification.flags = Notification.FLAG_AUTO_CANCEL;
+                                notificationManager.notify(friend.getId(),notification);
+                            }
                             //更新会话数据
+                            Conversation conversation = new Conversation();
                             conversation.setUser(friend);
                             conversation.setCurrentMessage(message);
                             StaticData.addConversation(conversation);
@@ -94,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                             updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
                             sendBroadcast(updateConversation);
                             //更新聊天数据
-                            List<Message> messageList = StaticData.friendMessageMap.get(topicRes.getFromId());
+                            List<Message> messageList = StaticData.friendMessageMap.get(resultRes.getFromId());
                             if(messageList == null)
                                 messageList = new ArrayList<>();
                             Message m = new Message();
@@ -102,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                             m.setType(Message.Type.RECEIVE_TEXT);
                             m.setContent(message);
                             messageList.add(m);
-                            StaticData.friendMessageMap.put(topicRes.getFromId(),messageList);
+                            StaticData.friendMessageMap.put(resultRes.getFromId(),messageList);
                             //广播通知更新
                             Intent updateMessage = new Intent();
                             updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
@@ -113,19 +144,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 }
-                case MqttTopicAnalyzer.RECEIVE_GROUP_MESSAGE: {
+                case MqttTopicUtils.RECEIVE_GROUP_MESSAGE: {
                     for(Group group : StaticData.groupList) {
-                        if(group.getId().equals(topicRes.getToId())) {
+                        if(group.getId().equals(resultRes.getToId())) {
                             Conversation conversation = new Conversation();
                             conversation.setGroup(group);
                             try {
                                 URL url = new URL(StaticData.DOMAIN + "/userinfo");
                                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                                 httpURLConnection.setRequestMethod("POST");
-                                httpURLConnection.setRequestProperty("Content-Type","application/json; charset=UTF-8");
+                                httpURLConnection.setRequestProperty("Content-Result","application/json; charset=UTF-8");
                                 Map<String,Object> params = new HashMap<>();
                                 params.put("myId",StaticData.my.getId());
-                                params.put("friendId", topicRes.getFromId());
+                                params.put("friendId", resultRes.getFromId());
                                 String post = new Gson().toJson(params);
                                 httpURLConnection.setDoOutput(true);
                                 httpURLConnection.setDoInput(true);
@@ -169,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_friend,null));
         initFriendPage();
         viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_my,null));
+        initMyPage();
         viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(new MainViewPagerAdapter(viewList));
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -222,6 +254,10 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = viewList.get(1).findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new FriendRecyclerViewAdapter(this));
+    }
+
+    private void initMyPage() {
+
     }
 
     private void initBottomNavigation() {
@@ -284,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.addFriendButton:
-                Intent intent = new Intent(this,AddFriendOrGroupActivity.class);
+                Intent intent = new Intent(this, SearchFriendOrGroupActivity.class);
                 startActivity(intent);
                 break;
         }
