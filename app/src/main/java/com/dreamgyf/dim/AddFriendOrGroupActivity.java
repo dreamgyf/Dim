@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -56,6 +57,12 @@ public class AddFriendOrGroupActivity extends AppCompatActivity {
         verifyText = findViewById(R.id.verify_text);
         remarkText = findViewById(R.id.remark_text);
 
+        if(user != null) {
+            findViewById(R.id.remark_view).setVisibility(View.VISIBLE);
+        }
+        else {
+            findViewById(R.id.remark_view).setVisibility(View.INVISIBLE);
+        }
     }
 
     private void initToolbar() {

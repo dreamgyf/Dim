@@ -24,46 +24,64 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         android:orientation="vertical"
-        android:paddingTop="50dp">
+        android:paddingTop="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="填写验证信息"/>
-
-        <EditText
-            android:id="@+id/verify_text"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:gravity="top|start"
-            android:layout_marginTop="10dp"
-            android:paddingTop="10dp"
-            android:paddingEnd="10dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:background="@android:color/white"/>
-
-        <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
-            android:singleLine="true"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="设置备注"/>
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/remark_text"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="填写验证信息"/>
+
+            <EditText
+                android:id="@+id/verify_text"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:gravity="top|start"
+                android:layout_marginTop="10dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:background="@android:color/white"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/remark_view"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="10dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:background="@android:color/white"
-            android:singleLine="true"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="50dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="设置备注"/>
+
+            <EditText
+                android:id="@+id/remark_text"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:background="@android:color/white"
+                android:singleLine="true"/>
+
+        </LinearLayout>
+
+
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
