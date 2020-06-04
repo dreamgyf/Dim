@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.dreamgyf.dim.adapter.SearchFriendListViewAdapter;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Group;
-import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.entity.httpresp.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

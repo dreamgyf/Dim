@@ -1,4 +1,4 @@
-package com.dreamgyf.dim.entity;
+package com.dreamgyf.dim.entity.httpresp;
 
 import java.io.Serializable;
 

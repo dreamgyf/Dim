@@ -15,7 +15,7 @@ import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
-import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.entity.httpresp.User;
 
 import java.util.List;
 

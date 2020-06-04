@@ -1,9 +1,11 @@
-package com.dreamgyf.dim.entity;
+package com.dreamgyf.dim.entity.httpresp;
+
+import com.dreamgyf.dim.entity.Group;
 
 import java.io.Serializable;
 import java.util.List;
 
-public class Data implements Serializable {
+public class LoginResp extends Response implements Serializable {
 
     private User my;
 

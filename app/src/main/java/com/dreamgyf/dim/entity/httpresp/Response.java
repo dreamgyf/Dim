@@ -1,15 +1,12 @@
-package com.dreamgyf.dim.entity;
+package com.dreamgyf.dim.entity.httpresp;
 
 import java.io.Serializable;
-import java.util.Map;
 
 public class Response implements Serializable {
 
     private String code;
 
     private String message;
-
-    private Map<String, Object> data;
 
     public String getCode() {
         return code;
@@ -25,13 +22,5 @@ public class Response implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public Map<String, Object> getData() {
-        return data;
-    }
-
-    public void setData(Map<String, Object> data) {
-        this.data = data;
     }
 }

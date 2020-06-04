@@ -18,12 +18,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamgyf.dim.adapter.ChatRecyclerViewAdapter;
-import com.dreamgyf.dim.broadcast.BroadcastActions;
+import com.dreamgyf.dim.base.broadcast.BroadcastActions;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
-import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.entity.httpresp.User;
 import com.dreamgyf.exception.MqttException;
 import com.dreamgyf.mqtt.client.MqttPublishOptions;
 import com.dreamgyf.mqtt.client.callback.MqttPublishCallback;

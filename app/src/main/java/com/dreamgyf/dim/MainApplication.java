@@ -11,6 +11,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.dreamgyf.dim.base.mqtt.MessageReceiveHandler;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+
 public class MainApplication extends Application {
 
     private int activityCount = 0;
@@ -21,6 +26,9 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        initNotification();
+        createMessageReceiveHandler();
+
         String test = "@@verify@@@@remark@@";
         int verifyPos = test.indexOf("@@verify@@");
         int remarkPos = test.indexOf("@@remark@@");
@@ -28,7 +36,6 @@ public class MainApplication extends Application {
         String remark = test.substring(remarkPos + 10);
         String[] testArray = test.split("@@DIM@@");
 
-        initNotification();
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
@@ -69,6 +76,19 @@ public class MainApplication extends Application {
 
             }
         });
+    }
+
+    private void createMessageReceiveHandler() {
+        try {
+            Constructor<MessageReceiveHandler> constructor =  MessageReceiveHandler.class.getDeclaredConstructor(MainApplication.class);
+            constructor.setAccessible(true);
+            MessageReceiveHandler object = constructor.newInstance(this);
+            Field instance = MessageReceiveHandler.class.getDeclaredField("INSTANCE");
+            instance.setAccessible(true);
+            instance.set(object,object);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initNotification() {

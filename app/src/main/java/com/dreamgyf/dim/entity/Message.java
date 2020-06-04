@@ -1,6 +1,7 @@
 package com.dreamgyf.dim.entity;
 
 import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.entity.httpresp.User;
 
 import java.io.Serializable;
 

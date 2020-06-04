@@ -16,8 +16,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Group;
-import com.dreamgyf.dim.entity.User;
-import com.dreamgyf.dim.utils.MqttTopicUtils;
+import com.dreamgyf.dim.entity.httpresp.User;
+import com.dreamgyf.dim.base.mqtt.MqttTopicHandler;
 import com.dreamgyf.mqtt.client.MqttPublishOptions;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -90,11 +90,11 @@ public class AddFriendOrGroupActivity extends AppCompatActivity {
                             String message;
                             try {
                                 if(user != null) {
-                                    topic = MqttTopicUtils.build(MqttTopicUtils.SEND_FRIEND_ADD,StaticData.my.getId(),user.getId());
+                                    topic = MqttTopicHandler.build(MqttTopicHandler.SEND_FRIEND_ADD,StaticData.my.getId(),user.getId());
                                     message = "@@verify@@" + verifyText.getText().toString() + "@@remark@@" + remarkText.getText().toString();
                                 }
                                 else {
-                                    topic = MqttTopicUtils.build(MqttTopicUtils.SEND_FRIEND_ADD,StaticData.my.getId(),user.getId());
+                                    topic = MqttTopicHandler.build(MqttTopicHandler.SEND_FRIEND_ADD,StaticData.my.getId(),user.getId());
                                     message = "@@verify@@" + verifyText.getText().toString();
                                 }
                                 StaticData.mqttClient.publish(topic,message,new MqttPublishOptions().setQoS(2),(t, m) -> {

@@ -1,15 +1,17 @@
 package com.dreamgyf.dim.data;
 
+import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Message;
-import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.entity.httpresp.User;
 import com.dreamgyf.mqtt.client.MqttClient;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class StaticData {
 
@@ -20,6 +22,10 @@ public class StaticData {
     public static List<User> friendList;
 
     public static List<Group> groupList;
+
+    public static final LinkedBlockingQueue<MqttReceiveMessageEntity> receiveFriendMessageQueue = new LinkedBlockingQueue<>();
+
+    public static final LinkedBlockingQueue<MqttReceiveMessageEntity> receiveGroupMessageQueue = new LinkedBlockingQueue<>();
 
     public static final LinkedList<Conversation> conversationList = new LinkedList<>();
 
@@ -33,7 +39,7 @@ public class StaticData {
 
     public static final Object groupMessageMapLock = new Object();
 
-    public final static String DOMAIN = "http://47.100.255.133:8088";
+    public final static String DOMAIN = "http://dreamgyf.me:8088";
 
     public static void addConversation(Conversation conversation) {
         synchronized (StaticData.conversationListLock) {

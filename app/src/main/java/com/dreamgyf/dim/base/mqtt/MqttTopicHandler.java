@@ -1,4 +1,4 @@
-package com.dreamgyf.dim.utils;
+package com.dreamgyf.dim.base.mqtt;
 
 /**
  * /Dim/自己的id/message/friend/别人的id      接收到别人的消息
@@ -6,7 +6,7 @@ package com.dreamgyf.dim.utils;
  * /Dim/自己的id/add/friend/别人的id      接收到别人的好友请求
  * /Dim/群组的id/add/group/别人的id      接收到别人的加入群组请求（自己是群管理的情况下）
  */
-public class MqttTopicUtils {
+public class MqttTopicHandler {
 
     public static final int RECEIVE_FRIEND_MESSAGE = 0;
 

@@ -15,7 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
-import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.entity.httpresp.User;
 
 public class UserInfoActivity extends AppCompatActivity {
 

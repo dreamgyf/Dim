@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
-import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.entity.httpresp.User;
 
 import java.util.List;
 

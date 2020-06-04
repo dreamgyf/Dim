@@ -1,15 +1,12 @@
-package com.dreamgyf.dim;
+package com.dreamgyf.dim.main.view;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,44 +15,34 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
+import com.dreamgyf.dim.ChatActivity;
+import com.dreamgyf.dim.MainApplication;
+import com.dreamgyf.dim.R;
+import com.dreamgyf.dim.SearchFriendOrGroupActivity;
 import com.dreamgyf.dim.adapter.FriendRecyclerViewAdapter;
 import com.dreamgyf.dim.adapter.MainViewPagerAdapter;
 import com.dreamgyf.dim.adapter.MessagePageListViewAdapter;
-import com.dreamgyf.dim.broadcast.BroadcastActions;
+import com.dreamgyf.dim.base.broadcast.BroadcastActions;
+import com.dreamgyf.dim.base.mvp.activity.BaseActivity;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
-import com.dreamgyf.dim.entity.Group;
-import com.dreamgyf.dim.entity.Message;
-import com.dreamgyf.dim.entity.User;
-import com.dreamgyf.dim.utils.MqttTopicUtils;
+import com.dreamgyf.dim.main.model.MainModel;
+import com.dreamgyf.dim.main.presenter.MainPresenter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPresenter> implements IMainView {
 
     private MainApplication application;
 
@@ -75,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
 
     private BroadcastReceiver receiver;
 
+    @NonNull
+    @Override
+    public MainPresenter bindPresenter() {
+        return new MainPresenter(this);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,113 +76,12 @@ public class MainActivity extends AppCompatActivity {
         application = (MainApplication) getApplication();
         notificationManager = application.getNotificationManager();
 
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         initViewPager();
         initBottomNavigation();
-
-        StaticData.mqttClient.setCallback((topic, message) -> {
-            Log.e("Main Message",message);
-            MqttTopicUtils.Result resultRes = MqttTopicUtils.analyze(topic);
-            switch (resultRes.getType()) {
-                case MqttTopicUtils.RECEIVE_FRIEND_MESSAGE: {
-                    for(User friend : StaticData.friendList) {
-                        if(friend.getId().equals(resultRes.getFromId())) {
-                            if(application.isAppBackground()) {
-                                String username;
-                                if(friend.getRemarkName() != null) {
-                                    username = friend.getRemarkName();
-                                }
-                                else if(friend.getNickname() != null) {
-                                    username = friend.getNickname();
-                                }
-                                else {
-                                    username = friend.getUsername();
-                                }
-                                //通知
-                                NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"Message");
-                                Notification notification = builder.setContentTitle(username)
-                                        .setContentText(message)
-                                        .setSmallIcon(R.drawable.small_logo)
-                                        .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.small_logo)).build();
-                                notification.flags = Notification.FLAG_AUTO_CANCEL;
-                                notificationManager.notify(friend.getId(),notification);
-                            }
-                            //更新会话数据
-                            Conversation conversation = new Conversation();
-                            conversation.setUser(friend);
-                            conversation.setCurrentMessage(message);
-                            StaticData.addConversation(conversation);
-                            Intent updateConversation = new Intent();
-                            updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
-                            sendBroadcast(updateConversation);
-                            //更新聊天数据
-                            List<Message> messageList = StaticData.friendMessageMap.get(resultRes.getFromId());
-                            if(messageList == null)
-                                messageList = new ArrayList<>();
-                            Message m = new Message();
-                            m.setUser(friend);
-                            m.setType(Message.Type.RECEIVE_TEXT);
-                            m.setContent(message);
-                            messageList.add(m);
-                            StaticData.friendMessageMap.put(resultRes.getFromId(),messageList);
-                            //广播通知更新
-                            Intent updateMessage = new Intent();
-                            updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
-                            updateMessage.putExtra("user",friend);
-                            sendBroadcast(updateMessage);
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case MqttTopicUtils.RECEIVE_GROUP_MESSAGE: {
-                    for(Group group : StaticData.groupList) {
-                        if(group.getId().equals(resultRes.getToId())) {
-                            Conversation conversation = new Conversation();
-                            conversation.setGroup(group);
-                            try {
-                                URL url = new URL(StaticData.DOMAIN + "/userinfo");
-                                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                                httpURLConnection.setRequestMethod("POST");
-                                httpURLConnection.setRequestProperty("Content-Result","application/json; charset=UTF-8");
-                                Map<String,Object> params = new HashMap<>();
-                                params.put("myId",StaticData.my.getId());
-                                params.put("friendId", resultRes.getFromId());
-                                String post = new Gson().toJson(params);
-                                httpURLConnection.setDoOutput(true);
-                                httpURLConnection.setDoInput(true);
-                                OutputStream os = httpURLConnection.getOutputStream();
-                                os.write(post.getBytes("UTF-8"));
-                                os.flush();
-                                os.close();
-                                if(httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                                    BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-                                    String resp = "";
-                                    String line;
-                                    while((line = in.readLine()) != null)
-                                        resp += line;
-                                    in.close();
-                                    JsonObject jsonObject = new JsonParser().parse(resp).getAsJsonObject();
-                                    User user = new Gson().fromJson(jsonObject,User.class);
-                                    conversation.setUser(user);
-                                    conversation.setCurrentMessage(message);
-                                    StaticData.addConversation(conversation);
-                                    Intent updateConversation = new Intent();
-                                    updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
-                                    sendBroadcast(updateConversation);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        });
 
         initBroadcast();
     }
@@ -240,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Conversation conversation = StaticData.conversationList.get(position);
-                Intent intent = new Intent(MainActivity.this,ChatActivity.class);
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
                 if(conversation.getGroup() != null)
                     intent.putExtra("group",conversation.getGroup());
                 else
