@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,14 +23,15 @@ import com.dreamgyf.dim.ChatActivity;
 import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.SearchFriendOrGroupActivity;
-import com.dreamgyf.dim.adapter.FriendRecyclerViewAdapter;
-import com.dreamgyf.dim.adapter.MainViewPagerAdapter;
 import com.dreamgyf.dim.adapter.MessagePageListViewAdapter;
 import com.dreamgyf.dim.base.broadcast.BroadcastActions;
 import com.dreamgyf.dim.base.mvp.activity.BaseActivity;
+import com.dreamgyf.dim.contacts.adapter.FriendRecyclerViewAdapter;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
+import com.dreamgyf.dim.main.adapter.MainViewPagerAdapter;
 import com.dreamgyf.dim.main.model.MainModel;
+import com.dreamgyf.dim.main.presenter.IMainPresenter;
 import com.dreamgyf.dim.main.presenter.MainPresenter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -43,6 +43,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPresenter> implements IMainView {
+
+    private IMainPresenter mPresenter;
 
     private MainApplication application;
 
@@ -73,6 +75,7 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mPresenter = getPresenter();
         application = (MainApplication) getApplication();
         notificationManager = application.getNotificationManager();
 
@@ -87,12 +90,10 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
     }
 
     private void initViewPager() {
-        viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_message,null));
-        initMessagePage();
-        viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_friend,null));
-        initFriendPage();
-        viewList.add(LayoutInflater.from(this).inflate(R.layout.main_viewpager_my,null));
-        initMyPage();
+        List<View> viewList = new ArrayList<>();
+        viewList.add(mPresenter.getViewPagerView(0));
+        viewList.add(mPresenter.getViewPagerView(1));
+        viewList.add(mPresenter.getViewPagerView(2));
         viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(new MainViewPagerAdapter(viewList));
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -105,15 +106,13 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
             public void onPageSelected(int position) {
                 if(bottomNavigationView != null)
                     bottomNavigationView.getMenu().getItem(position).setChecked(true);
+                getSupportActionBar().setTitle(mPresenter.getViewPagerTitle(position));
                 switch (position) {
                     case 0:
-                        getSupportActionBar().setTitle("消息");
                         break;
                     case 1:
-                        getSupportActionBar().setTitle("好友");
                         break;
                     case 2:
-                        getSupportActionBar().setTitle("我");
                         break;
                 }
             }
@@ -154,22 +153,19 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
 
     private void initBottomNavigation() {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-                    case R.id.message:
-                        viewPager.setCurrentItem(0);
-                        break;
-                    case R.id.friend:
-                        viewPager.setCurrentItem(1);
-                        break;
-                    case R.id.my:
-                        viewPager.setCurrentItem(2);
-                        break;
-                }
-                return true;
+        bottomNavigationView.setOnNavigationItemSelectedListener((item) -> {
+            switch (item.getItemId()) {
+                case R.id.message:
+                    viewPager.setCurrentItem(0);
+                    break;
+                case R.id.friend:
+                    viewPager.setCurrentItem(1);
+                    break;
+                case R.id.my:
+                    viewPager.setCurrentItem(2);
+                    break;
             }
+            return true;
         });
     }
 

@@ -1,4 +1,4 @@
-package com.dreamgyf.dim.adapter;
+package com.dreamgyf.dim.contacts.adapter;
 
 import android.content.Context;
 import android.content.Intent;

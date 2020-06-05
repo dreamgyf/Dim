@@ -58,7 +58,6 @@ public class MessageReceiveHandler {
 		while (isRunning) {
 			try {
 				MqttReceiveMessageEntity messageEntity = StaticData.receiveFriendMessageQueue.take();
-				Log.e("asd123","asd123");
 				MqttTopicHandler.Result topicRes = messageEntity.getTopicRes();
 				String message = messageEntity.getMessage();
 				int friendId = topicRes.getFromId();

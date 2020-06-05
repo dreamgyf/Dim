@@ -1,4 +1,4 @@
-package com.dreamgyf.dim.adapter;
+package com.dreamgyf.dim.main.adapter;
 
 import android.view.View;
 import android.view.ViewGroup;
