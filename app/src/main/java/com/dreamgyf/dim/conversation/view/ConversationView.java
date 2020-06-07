@@ -1,18 +1,12 @@
 package com.dreamgyf.dim.conversation.view;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.dreamgyf.dim.ChatActivity;
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.conversation.adapter.ConversationListViewAdapter;
 import com.dreamgyf.dim.conversation.presenter.ConversationPresenter;
-import com.dreamgyf.dim.data.StaticData;
-import com.dreamgyf.dim.entity.Conversation;
 
 public class ConversationView implements IConversationView {
 

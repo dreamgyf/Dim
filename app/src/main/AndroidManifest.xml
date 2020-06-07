@@ -37,7 +37,7 @@
 		<activity android:name=".UserInfoActivity" />
 		<activity android:name=".SearchFriendOrGroupActivity" />
 		<activity
-			android:name=".ChatActivity"
+			android:name=".chat.view.ChatActivity"
 			android:windowSoftInputMode="adjustResize|stateHidden"/>
 		<activity android:name=".main.view.MainActivity" />
 	</application>

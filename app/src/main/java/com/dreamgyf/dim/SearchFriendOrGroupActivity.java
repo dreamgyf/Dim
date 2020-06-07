@@ -1,5 +1,6 @@
 package com.dreamgyf.dim;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -53,6 +54,10 @@ public class SearchFriendOrGroupActivity extends AppCompatActivity {
     private List<Group> groupList = new ArrayList<>();
 
     private SearchFriendListViewAdapter searchFriendListViewAdapter;
+
+    public static Intent createIntent(Context context) {
+        return new Intent(context,SearchFriendOrGroupActivity.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

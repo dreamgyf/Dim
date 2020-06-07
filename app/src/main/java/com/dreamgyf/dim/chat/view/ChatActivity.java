@@ -1,4 +1,4 @@
-package com.dreamgyf.dim;
+package com.dreamgyf.dim.chat.view;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,8 +19,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.adapter.ChatRecyclerViewAdapter;
 import com.dreamgyf.dim.base.broadcast.BroadcastActions;
+import com.dreamgyf.dim.base.mvp.activity.BaseActivity;
+import com.dreamgyf.dim.chat.model.ChatModel;
+import com.dreamgyf.dim.chat.presenter.ChatPresenter;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
@@ -36,12 +40,14 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseActivity<ChatModel,ChatActivity, ChatPresenter> implements IChatView {
 
     public static class Type {
         public final static int USER = 0;
         public final static int GROUP = 1;
     }
+
+    private ChatPresenter mPresenter;
 
     private Handler handler = new Handler();
 
@@ -96,6 +102,12 @@ public class ChatActivity extends AppCompatActivity {
                 finish();
             }
         }
+    }
+
+    @NonNull
+    @Override
+    public ChatPresenter bindPresenter() {
+        return mPresenter = new ChatPresenter(this);
     }
 
     @Override

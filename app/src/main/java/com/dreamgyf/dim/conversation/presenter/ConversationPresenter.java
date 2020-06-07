@@ -8,18 +8,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.dreamgyf.dim.ChatActivity;
+import com.dreamgyf.dim.chat.view.ChatActivity;
 import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.base.broadcast.BroadcastActions;
 import com.dreamgyf.dim.conversation.adapter.ConversationListViewAdapter;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.conversation.model.ConversationModel;
 import com.dreamgyf.dim.conversation.view.ConversationView;
-import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.sharedpreferences.DataAccessUtils;
-
-import java.util.LinkedList;
 
 public class ConversationPresenter extends BasePresenter<ConversationModel,ConversationView> implements IConversationPresenter {
 

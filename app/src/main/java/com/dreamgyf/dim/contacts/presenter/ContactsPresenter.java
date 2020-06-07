@@ -3,8 +3,11 @@ package com.dreamgyf.dim.contacts.presenter;
 import android.content.Context;
 
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
+import com.dreamgyf.dim.contacts.adapter.FriendRecyclerViewAdapter;
 import com.dreamgyf.dim.contacts.model.ContactsModel;
 import com.dreamgyf.dim.contacts.view.ContactsView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView> implements IContactsPresenter {
 
@@ -13,6 +16,8 @@ public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView>
 	private ContactsView mView;
 
 	private ContactsModel mModel;
+
+	private RecyclerView mRecyclerView;
 
 	public ContactsPresenter(Context context) {
 		super(new ContactsView());
@@ -43,5 +48,10 @@ public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView>
 	@Override
 	public void onSelected() {
 		mView.onSelected();
+	}
+
+	public void initRecyclerView(RecyclerView recyclerView) {
+		this.mRecyclerView = recyclerView;
+		mRecyclerView.setAdapter(new FriendRecyclerViewAdapter(mContext));
 	}
 }

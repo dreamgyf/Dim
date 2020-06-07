@@ -38,23 +38,9 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
 
     private IMainPresenter mPresenter;
 
-    private MainApplication application;
-
-    private NotificationManager notificationManager;
-
-    private Handler handler = new Handler();
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
-
     private ViewPager viewPager;
 
-    private List<View> viewList = new ArrayList<>();
-
     private BottomNavigationView bottomNavigationView;
-
-    private ConversationListViewAdapter conversationListViewAdapter;
-
-    private BroadcastReceiver receiver;
 
     @NonNull
     @Override
@@ -68,9 +54,6 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
         setContentView(R.layout.activity_main);
 
         mPresenter = getPresenter();
-        application = (MainApplication) getApplication();
-        notificationManager = application.getNotificationManager();
-
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -150,8 +133,7 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.addFriendButton:
-                Intent intent = new Intent(this, SearchFriendOrGroupActivity.class);
-                startActivity(intent);
+                startActivity(SearchFriendOrGroupActivity.createIntent(this));
                 break;
         }
         return true;

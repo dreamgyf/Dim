@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
+import com.dreamgyf.dim.chat.view.ChatActivity;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.httpresp.User;
 

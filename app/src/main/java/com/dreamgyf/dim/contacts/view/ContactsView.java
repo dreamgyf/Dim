@@ -31,7 +31,7 @@ public class ContactsView implements IContactsView {
 		mView = LayoutInflater.from(mContext).inflate(R.layout.main_viewpager_friend,null,false);
 		mRecyclerView = mView.findViewById(R.id.recycler_view);
 		mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-		mRecyclerView.setAdapter(new FriendRecyclerViewAdapter(mContext));
+		mPresenter.initRecyclerView(mRecyclerView);
 	}
 
 	@Override
