@@ -15,16 +15,36 @@ import com.dreamgyf.dim.base.mqtt.MessageReceiveHandler;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainApplication extends Application {
+
+    private static MainApplication INSTANCE;
+
+    public static MainApplication getInstance() {
+        return INSTANCE;
+    }
 
     private int activityCount = 0;
 
     private NotificationManager notificationManager;
 
+    private List<OnActivityPauseListener> mPauseListenerList = new ArrayList<>();
+
+    public interface OnActivityPauseListener {
+        void onPause();
+    }
+
+    public void addOnActivityPauseListener(OnActivityPauseListener listener) {
+        mPauseListenerList.add(listener);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        INSTANCE = this;
 
         initNotification();
         createMessageReceiveHandler();
@@ -57,7 +77,11 @@ public class MainApplication extends Application {
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
-
+                for(OnActivityPauseListener listener : mPauseListenerList) {
+                    if(listener != null) {
+                        listener.onPause();
+                    }
+                }
             }
 
             @Override

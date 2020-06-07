@@ -3,6 +3,7 @@ package com.dreamgyf.dim.base.mqtt;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.dreamgyf.dim.MainApplication;
@@ -70,12 +71,10 @@ public class MessageReceiveHandler {
 						}
 						//更新会话数据
 						Conversation conversation = new Conversation();
+						conversation.setType(Conversation.Type.USER);
 						conversation.setUser(friend);
 						conversation.setCurrentMessage(message);
-						StaticData.addConversation(conversation);
-						Intent updateConversation = new Intent();
-						updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
-						mApplication.sendBroadcast(updateConversation);
+						mApplication.sendBroadcast(Conversation.createBroadcast(conversation));
 						//更新聊天数据
 						List<Message> messageList = StaticData.friendMessageMap.get(friendId);
 						if (messageList == null)
@@ -89,7 +88,7 @@ public class MessageReceiveHandler {
 						//广播通知更新
 						Intent updateMessage = new Intent();
 						updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
-						updateMessage.putExtra("user", friend);
+						updateMessage.putExtra("user", (Parcelable) friend);
 						mApplication.sendBroadcast(updateMessage);
 						break;
 					}
@@ -111,7 +110,7 @@ public class MessageReceiveHandler {
 				int userId = topicRes.getFromId();
 				int groupId = topicRes.getToId();
 				for (Group group : StaticData.groupList) {
-					if (group.getId().equals(groupId)) {
+					if (group.getId()== groupId) {
 						Conversation conversation = new Conversation();
 						conversation.setGroup(group);
 						try {

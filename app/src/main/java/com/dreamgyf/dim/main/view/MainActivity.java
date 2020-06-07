@@ -10,25 +10,17 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
-import com.dreamgyf.dim.ChatActivity;
 import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.SearchFriendOrGroupActivity;
-import com.dreamgyf.dim.adapter.MessagePageListViewAdapter;
+import com.dreamgyf.dim.conversation.adapter.ConversationListViewAdapter;
 import com.dreamgyf.dim.base.broadcast.BroadcastActions;
 import com.dreamgyf.dim.base.mvp.activity.BaseActivity;
-import com.dreamgyf.dim.contacts.adapter.FriendRecyclerViewAdapter;
-import com.dreamgyf.dim.data.StaticData;
-import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.main.adapter.MainViewPagerAdapter;
 import com.dreamgyf.dim.main.model.MainModel;
 import com.dreamgyf.dim.main.presenter.IMainPresenter;
@@ -60,7 +52,7 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
 
     private BottomNavigationView bottomNavigationView;
 
-    private MessagePageListViewAdapter messagePageListViewAdapter;
+    private ConversationListViewAdapter conversationListViewAdapter;
 
     private BroadcastReceiver receiver;
 
@@ -85,8 +77,6 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
 
         initViewPager();
         initBottomNavigation();
-
-        initBroadcast();
     }
 
     private void initViewPager() {
@@ -104,17 +94,10 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
 
             @Override
             public void onPageSelected(int position) {
-                if(bottomNavigationView != null)
+                if (bottomNavigationView != null)
                     bottomNavigationView.getMenu().getItem(position).setChecked(true);
                 getSupportActionBar().setTitle(mPresenter.getViewPagerTitle(position));
-                switch (position) {
-                    case 0:
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        break;
-                }
+                mPresenter.onPageSelected(position);
             }
 
             @Override
@@ -122,33 +105,6 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
 
             }
         });
-    }
-
-    private void initMessagePage() {
-        ListView listView = viewList.get(0).findViewById(R.id.listview);
-        listView.setAdapter(messagePageListViewAdapter = new MessagePageListViewAdapter(this));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Conversation conversation = StaticData.conversationList.get(position);
-                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-                if(conversation.getGroup() != null)
-                    intent.putExtra("group",conversation.getGroup());
-                else
-                    intent.putExtra("user",conversation.getUser());
-                startActivity(intent);
-            }
-        });
-    }
-
-    private void initFriendPage() {
-        RecyclerView recyclerView = viewList.get(1).findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new FriendRecyclerViewAdapter(this));
-    }
-
-    private void initMyPage() {
-
     }
 
     private void initBottomNavigation() {
@@ -169,23 +125,9 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
         });
     }
 
-    private void initBroadcast() {
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if(BroadcastActions.UPDATE_CONVERSATION.equals(intent.getAction())) {
-                    messagePageListViewAdapter.notifyDataSetChanged();
-                }
-            }
-        };
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BroadcastActions.UPDATE_CONVERSATION);
-        registerReceiver(receiver,intentFilter);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu,menu);
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         if (menu.getClass().getSimpleName().equals("MenuBuilder")) {
             try {
                 Method m = menu.getClass().getDeclaredMethod("setOptionalIconsVisible", Boolean.TYPE);
@@ -213,11 +155,5 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
                 break;
         }
         return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        unregisterReceiver(receiver);
-        super.onDestroy();
     }
 }

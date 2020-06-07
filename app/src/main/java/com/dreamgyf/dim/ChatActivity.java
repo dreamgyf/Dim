@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,15 +38,22 @@ import java.util.concurrent.Executors;
 
 public class ChatActivity extends AppCompatActivity {
 
+    public static class Type {
+        public final static int USER = 0;
+        public final static int GROUP = 1;
+    }
+
     private Handler handler = new Handler();
 
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     private BroadcastReceiver receiver;
 
-    private User user;
+    private int mType;
 
-    private Group group;
+    private User mUser;
+
+    private Group mGroup;
 
     private RecyclerView recyclerView;
 
@@ -56,19 +65,49 @@ public class ChatActivity extends AppCompatActivity {
 
     private ChatRecyclerViewAdapter chatRecyclerViewAdapter;
 
+    public static Intent createIntent(Context context, User user) {
+        Intent intent = new Intent(context,ChatActivity.class);
+        intent.putExtra("type",Type.USER);
+        intent.putExtra("user", (Parcelable) user);
+        return intent;
+    }
+
+    public static Intent createIntent(Context context, Group group) {
+        Intent intent = new Intent(context,ChatActivity.class);
+        intent.putExtra("type",Type.GROUP);
+        intent.putExtra("group", (Parcelable) group);
+        return intent;
+    }
+
+    private void readIntent() {
+        Intent intent = getIntent();
+        mType = intent.getIntExtra("type",-1);
+        switch (mType) {
+            case Type.USER: {
+                mUser = intent.getParcelableExtra("user");
+                break;
+            }
+            case Type.GROUP: {
+                mUser = intent.getParcelableExtra("group");
+                break;
+            }
+            default: {
+                Toast.makeText(this,"获取数据失败",Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        readIntent();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Intent intent = getIntent();
-        user = (User) intent.getSerializableExtra("user");
-        group = (Group) intent.getSerializableExtra("group");
-
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -78,24 +117,24 @@ public class ChatActivity extends AppCompatActivity {
                 isRecyclerViewScrolling = !(newState == RecyclerView.SCROLL_STATE_IDLE);
             }
         });
-        if(user != null) {
+        if(mUser != null) {
             String username;
-            if(user.getRemarkName() != null) {
-                username = user.getRemarkName();
+            if(mUser.getRemarkName() != null) {
+                username = mUser.getRemarkName();
             }
-            else if(user.getNickname() != null) {
-                username = user.getNickname();
+            else if(mUser.getNickname() != null) {
+                username = mUser.getNickname();
             }
             else {
-                username = user.getUsername();
+                username = mUser.getUsername();
             }
             getSupportActionBar().setTitle(username);
-            recyclerView.setAdapter(chatRecyclerViewAdapter = new ChatRecyclerViewAdapter(this,user));
-            if(StaticData.friendMessageMap.get(user.getId()) == null) {
-                StaticData.friendMessageMap.put(user.getId(),new ArrayList<>());
+            recyclerView.setAdapter(chatRecyclerViewAdapter = new ChatRecyclerViewAdapter(this, mUser));
+            if(StaticData.friendMessageMap.get(mUser.getId()) == null) {
+                StaticData.friendMessageMap.put(mUser.getId(),new ArrayList<>());
             }
-            if(!StaticData.friendMessageMap.get(user.getId()).isEmpty())
-                recyclerView.scrollToPosition(StaticData.friendMessageMap.get(user.getId()).size() - 1);
+            if(!StaticData.friendMessageMap.get(mUser.getId()).isEmpty())
+                recyclerView.scrollToPosition(StaticData.friendMessageMap.get(mUser.getId()).size() - 1);
         }
         initRibbon();
         initBroadcast();
@@ -121,11 +160,11 @@ public class ChatActivity extends AppCompatActivity {
                             }
                         });
                         String topic = "/Dim/";
-                        if(user != null) {
-                            topic += user.getId() + "/message/friend/";
+                        if(mUser != null) {
+                            topic += mUser.getId() + "/message/friend/";
                         }
-                        else if(group != null) {
-                            topic += group.getId() + "/message/group/";
+                        else if(mGroup != null) {
+                            topic += mGroup.getId() + "/message/group/";
                         }
                         topic += StaticData.my.getId();
                         try {
@@ -133,8 +172,8 @@ public class ChatActivity extends AppCompatActivity {
                                 @Override
                                 public void messageArrived(String topic, String message) {
                                     //更新聊天数据
-                                    if(user != null) {
-                                        List<Message> messageList = StaticData.friendMessageMap.get(user.getId());
+                                    if(mUser != null) {
+                                        List<Message> messageList = StaticData.friendMessageMap.get(mUser.getId());
                                         if(messageList == null)
                                             messageList = new ArrayList<>();
                                         Message m = new Message();
@@ -142,21 +181,24 @@ public class ChatActivity extends AppCompatActivity {
                                         m.setType(Message.Type.SEND_TEXT);
                                         m.setContent(message);
                                         messageList.add(m);
-                                        StaticData.friendMessageMap.put(user.getId(),messageList);
+                                        StaticData.friendMessageMap.put(mUser.getId(),messageList);
                                         //广播通知更新
-                                        Intent updateMessage = new Intent();
-                                        updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
-                                        updateMessage.putExtra("user",user);
-                                        sendBroadcast(updateMessage);
-
-                                        Conversation conversation = new Conversation();
-                                        conversation.setUser(user);
-                                        conversation.setGroup(group);
-                                        conversation.setCurrentMessage(message);
-                                        StaticData.addConversation(conversation);
-                                        Intent updateConversation = new Intent();
-                                        updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
-                                        sendBroadcast(updateConversation);
+                                        switch (mType) {
+                                            case Type.USER: {
+                                                //更新会话
+                                                Conversation conversation = new Conversation();
+                                                conversation.setType(Conversation.Type.USER);
+                                                conversation.setUser(mUser);
+                                                conversation.setCurrentMessage(message);
+                                                sendBroadcast(Conversation.createBroadcast(conversation));
+                                                //更新聊天页面
+                                                Intent updateMessage = new Intent();
+                                                updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
+                                                updateMessage.putExtra("user", (Parcelable) mUser);
+                                                sendBroadcast(updateMessage);
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
                             });
@@ -182,11 +224,11 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(BroadcastActions.UPDATE_MESSAGE.equals(intent.getAction())) {
-                    User u = (User) intent.getSerializableExtra("user");
-                    Group g = (Group) intent.getSerializableExtra("group");
-                    if(user != null && u != null && user.getId().equals(u.getId()))
+                    User u = (User) intent.getParcelableExtra("user");
+                    Group g = (Group) intent.getParcelableExtra("group");
+                    if(mUser != null && u != null && mUser.getId().equals(u.getId()))
                         chatRecyclerViewAdapter.notifyDataSetChanged();
-                    else if(group != null && g != null && group.getId().equals(g.getId()))
+                    else if(mGroup != null && g != null && mGroup.getId() == g.getId())
                         chatRecyclerViewAdapter.notifyDataSetChanged();
                     scrollToBottom();
                 }

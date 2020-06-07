@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -131,7 +132,7 @@ public class SearchFriendOrGroupActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 User user = friendList.get(position);
                 Intent intent = new Intent(SearchFriendOrGroupActivity.this,UserInfoActivity.class);
-                intent.putExtra("user",user);
+                intent.putExtra("user", (Serializable) user);
                 startActivity(intent);
             }
         });

@@ -17,9 +17,11 @@ import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.httpresp.User;
 
+import java.io.Serializable;
+
 public class UserInfoActivity extends AppCompatActivity {
 
-    private User user;
+    private User mUser;
 
     private LinearLayout bottomButton;
 
@@ -32,9 +34,9 @@ public class UserInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_info);
 
-        user = (User) getIntent().getSerializableExtra("user");
+        mUser = (User) getIntent().getSerializableExtra("user");
         for(User u : StaticData.friendList) {
-            if(u.getId().equals(user.getId())){
+            if(u.getId().equals(mUser.getId())){
                 isFriend = true;
                 break;
             }
@@ -71,16 +73,14 @@ public class UserInfoActivity extends AppCompatActivity {
         TextView nickname = findViewById(R.id.nickname);
         TextView username = findViewById(R.id.username);
         GetAvatarTask task = new GetAvatarTask(this,avatar);
-        task.execute(user.getAvatarId());
-        nickname.setText(user.getNickname() != null ? user.getNickname() : user.getUsername());
-        username.setText("用户名 : " + user.getUsername());
+        task.execute(mUser.getAvatarId());
+        nickname.setText(mUser.getNickname() != null ? mUser.getNickname() : mUser.getUsername());
+        username.setText("用户名 : " + mUser.getUsername());
     }
 
     private void initSendMessageButton() {
         bottomButton.setOnClickListener((view) -> {
-            Intent intent = new Intent(this,ChatActivity.class);
-            intent.putExtra("user",user);
-            startActivity(intent);
+            startActivity(ChatActivity.createIntent(UserInfoActivity.this, mUser));
             finish();
         });
     }
@@ -88,7 +88,7 @@ public class UserInfoActivity extends AppCompatActivity {
     private void initAddFriendButton() {
         bottomButton.setOnClickListener((view) -> {
             Intent intent = new Intent(this,AddFriendOrGroupActivity.class);
-            intent.putExtra("user",user);
+            intent.putExtra("user", (Serializable) mUser);
             startActivityForResult(intent,0);
         });
     }

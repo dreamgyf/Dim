@@ -9,7 +9,8 @@ import android.widget.ListView;
 
 import com.dreamgyf.dim.ChatActivity;
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.adapter.MessagePageListViewAdapter;
+import com.dreamgyf.dim.conversation.adapter.ConversationListViewAdapter;
+import com.dreamgyf.dim.conversation.presenter.ConversationPresenter;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
 
@@ -17,31 +18,21 @@ public class ConversationView implements IConversationView {
 
 	private Context mContext;
 
+	private ConversationPresenter mPresenter;
+
 	private View mView;
 
 	private ListView mListView;
 
-	public ConversationView(Context context) {
-		this.mContext = context;
-		init();
+	public void bindPresenter(ConversationPresenter presenter) {
+		this.mPresenter = presenter;
 	}
 
-	private void init() {
+	public void init() {
+		mContext = mPresenter.getContext();
 		mView = LayoutInflater.from(mContext).inflate(R.layout.main_viewpager_message,null,false);
 		mListView = mView.findViewById(R.id.listview);
-		mListView.setAdapter(new MessagePageListViewAdapter(mContext));
-		mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Conversation conversation = StaticData.conversationList.get(position);
-				Intent intent = new Intent(mContext, ChatActivity.class);
-				if(conversation.getGroup() != null)
-					intent.putExtra("group",conversation.getGroup());
-				else
-					intent.putExtra("user",conversation.getUser());
-				mContext.startActivity(intent);
-			}
-		});
+		mPresenter.initListView(mListView);
 	}
 
 	@Override

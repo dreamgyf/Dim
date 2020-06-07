@@ -1,14 +1,20 @@
 package com.dreamgyf.dim.main.presenter;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.view.View;
 
+import com.dreamgyf.dim.base.broadcast.BroadcastActions;
 import com.dreamgyf.dim.base.mqtt.MessageReceiveHandler;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.contacts.presenter.ContactsPresenter;
 import com.dreamgyf.dim.contacts.view.ContactsView;
 import com.dreamgyf.dim.conversation.presenter.ConversationPresenter;
 import com.dreamgyf.dim.conversation.view.ConversationView;
+import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.main.model.MainModel;
 import com.dreamgyf.dim.main.view.MainActivity;
 import com.dreamgyf.dim.my.presenter.MyPresenter;
@@ -40,6 +46,15 @@ public class MainPresenter extends BasePresenter<MainModel, MainActivity> implem
 	protected void onDetach() {
 		MessageReceiveHandler.getInstance().stop();
 		mConversationPresenter.detach();
+		mContactsPresenter.detach();
+		mMyPresenter.detach();
+	}
+
+	@Override
+	public void onPause() {
+		mConversationPresenter.onPause();
+		mContactsPresenter.onPause();
+		mMyPresenter.onPause();
 	}
 
 	@Override
@@ -48,11 +63,11 @@ public class MainPresenter extends BasePresenter<MainModel, MainActivity> implem
 	}
 
 	private void initViewPager() {
-		mConversationPresenter = new ConversationPresenter(new ConversationView(mActivity));
+		mConversationPresenter = new ConversationPresenter(mActivity);
 		mConversationPresenter.attach();
-		mContactsPresenter = new ContactsPresenter(new ContactsView(mActivity));
+		mContactsPresenter = new ContactsPresenter(mActivity);
 		mContactsPresenter.attach();
-		mMyPresenter = new MyPresenter(new MyView(mActivity));
+		mMyPresenter = new MyPresenter(mActivity);
 		mMyPresenter.attach();
 	}
 
@@ -80,5 +95,20 @@ public class MainPresenter extends BasePresenter<MainModel, MainActivity> implem
 				return mMyPresenter.getView().getTitle();
 		}
 		return "";
+	}
+
+	@Override
+	public void onPageSelected(int position) {
+		switch (position) {
+			case 0:
+				mConversationPresenter.onSelected();
+				break;
+			case 1:
+				mContactsPresenter.onSelected();
+				break;
+			case 2:
+				mMyPresenter.onSelected();
+				break;
+		}
 	}
 }

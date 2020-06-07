@@ -24,6 +24,11 @@ public abstract class BasePresenter<M extends IBaseModel, V extends IBaseView> i
 		onDetach();
 	}
 
+	@Override
+	public void onPause() {
+
+	}
+
 	protected abstract void onAttach();
 
 	protected abstract void onDetach();

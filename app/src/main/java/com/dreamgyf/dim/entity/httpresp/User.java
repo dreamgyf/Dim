@@ -1,8 +1,11 @@
 package com.dreamgyf.dim.entity.httpresp;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.Serializable;
 
-public class User implements Serializable,Comparable<User> {
+public class User implements Serializable, Parcelable,Comparable<User> {
 
     private Integer id;
 
@@ -78,4 +81,54 @@ public class User implements Serializable,Comparable<User> {
         }
         return thisUsername.compareTo(thatUsername);
     }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(id);
+        }
+        dest.writeString(username);
+        dest.writeString(nickname);
+        dest.writeString(remarkName);
+        if (avatarId == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(avatarId);
+        }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            User user = new User();
+            if (in.readByte() == 0) {
+                user.setId(null);
+            } else {
+                user.setId(in.readInt());
+            }
+            user.setUsername(in.readString());
+            user.setNickname(in.readString());
+            user.setRemarkName(in.readString());
+            if (in.readByte() == 0) {
+                user.setAvatarId(null);
+            } else {
+                user.setAvatarId(in.readInt());
+            }
+            return user;
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 }

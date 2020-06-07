@@ -30,6 +30,12 @@ public abstract class BaseActivity<M extends IBaseModel,V extends BaseActivity,P
 	}
 
 	@Override
+	protected void onPause() {
+		super.onPause();
+		mPresenter.onPause();
+	}
+
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		mPresenter.detach();

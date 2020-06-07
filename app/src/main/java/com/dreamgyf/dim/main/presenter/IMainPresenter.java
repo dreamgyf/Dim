@@ -10,4 +10,6 @@ public interface IMainPresenter extends IBasePresenter<MainModel, MainActivity> 
 	View getViewPagerView(int position);
 
 	String getViewPagerTitle(int position);
+
+	void onPageSelected(int position);
 }

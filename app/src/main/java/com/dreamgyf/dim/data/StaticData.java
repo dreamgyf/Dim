@@ -35,10 +35,6 @@ public class StaticData {
 
     public static final Object conversationListLock = new Object();
 
-    public static final Object friendMessageMapLock = new Object();
-
-    public static final Object groupMessageMapLock = new Object();
-
     public final static String DOMAIN = "http://dreamgyf.me:8088";
 
     public static void addConversation(Conversation conversation) {

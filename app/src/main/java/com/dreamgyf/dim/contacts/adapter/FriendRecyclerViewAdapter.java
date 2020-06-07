@@ -16,6 +16,8 @@ import com.dreamgyf.dim.UserInfoActivity;
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 
+import java.io.Serializable;
+
 public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecyclerViewAdapter.ViewHolder> {
 
     private Context context;
@@ -61,7 +63,7 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
         //点击事件
         holder.itemView.setOnClickListener((view) -> {
             Intent intent = new Intent(view.getContext(), UserInfoActivity.class);
-            intent.putExtra("user",StaticData.friendList.get(position));
+            intent.putExtra("user", (Serializable) StaticData.friendList.get(position));
             context.startActivity(intent);
         });
     }

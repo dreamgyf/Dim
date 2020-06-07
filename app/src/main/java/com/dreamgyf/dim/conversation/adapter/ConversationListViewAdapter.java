@@ -1,4 +1,4 @@
-package com.dreamgyf.dim.adapter;
+package com.dreamgyf.dim.conversation.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,8 +12,12 @@ import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.entity.Conversation;
+import com.dreamgyf.dim.sharedpreferences.DataAccessUtils;
+import com.dreamgyf.dim.utils.NameUtils;
 
-public class MessagePageListViewAdapter extends BaseAdapter {
+import java.util.LinkedList;
+
+public class ConversationListViewAdapter extends BaseAdapter {
 
     class ViewHolder {
         ImageView avatar;
@@ -23,19 +27,22 @@ public class MessagePageListViewAdapter extends BaseAdapter {
 
     private Context context;
 
-    public MessagePageListViewAdapter(Context context) {
+    private final LinkedList<Conversation> list;
+
+    public ConversationListViewAdapter(Context context, LinkedList<Conversation> list) {
         super();
         this.context = context;
+        this.list = list;
     }
 
     @Override
     public int getCount() {
-        return StaticData.conversationList.size();
+        return list.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return StaticData.conversationList.get(position);
+        return list.get(position);
     }
 
     @Override
@@ -57,43 +64,47 @@ public class MessagePageListViewAdapter extends BaseAdapter {
         else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-        synchronized (StaticData.conversationListLock) {
-            Conversation conversation = StaticData.conversationList.get(position);
-            String username;
-            if(conversation.getUser().getRemarkName() != null) {
-                username = conversation.getUser().getRemarkName();
-            }
-            else if(conversation.getUser().getNickname() != null) {
-                username = conversation.getUser().getNickname();
-            }
-            else {
-                username = conversation.getUser().getUsername();
-            }
-            if(conversation.getGroup() != null) {
-                viewHolder.name.setText(conversation.getGroup().getName());
-                viewHolder.message.setText(username + ":" + conversation.getCurrentMessage());
-            }
-            else {
+        Conversation conversation = list.get(position);
+        switch (conversation.getType()) {
+            case Conversation.Type.USER: {
                 //设置头像
                 GetAvatarTask getAvatarTask = new GetAvatarTask(context,viewHolder.avatar);
                 getAvatarTask.execute(conversation.getUser().getAvatarId());
-                viewHolder.name.setText(username);
+                viewHolder.name.setText(NameUtils.getUsername(conversation.getUser()));
                 viewHolder.message.setText(conversation.getCurrentMessage());
+                break;
+            }
+            case Conversation.Type.GROUP: {
+                viewHolder.name.setText(conversation.getGroup().getName());
+                viewHolder.message.setText(NameUtils.getUsername(conversation.getUser()) + ":" + conversation.getCurrentMessage());
+                break;
             }
         }
         return convertView;
     }
 
-    public void addConversation(Conversation conversation) {
-        synchronized (StaticData.conversationListLock) {
-            for(int i = 0;i < StaticData.conversationList.size();i++) {
-                if(conversation.getUser().getId().equals(StaticData.conversationList.get(i).getUser().getId())) {
-                    StaticData.conversationList.remove(i);
+    public void update(Conversation conversation) {
+        synchronized (list) {
+            switch (conversation.getType()) {
+                case Conversation.Type.USER: {
+                    for(int i = 0;i < list.size();i++) {
+                        if(conversation.getUser().getId().equals(list.get(i).getUser().getId())) {
+                            list.remove(i);
+                            break;
+                        }
+                    }
+                    list.add(0,conversation);
+                    break;
+                }
+                case Conversation.Type.GROUP: {
                     break;
                 }
             }
-            StaticData.conversationList.add(0,conversation);
         }
         notifyDataSetChanged();
+    }
+
+    public void sync2Local() {
+        DataAccessUtils.saveConversationList(context,list);
     }
 }
