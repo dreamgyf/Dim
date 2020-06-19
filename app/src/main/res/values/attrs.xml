@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<declare-styleable name="LoadingRecyclerView">
+		<attr name="enableLoad" format="boolean"/>
+		<attr name="direction" format="enum">
+			<enum name="start" value="0x01"/>
+			<enum name="end" value="0x02"/>
+		</attr>
+	</declare-styleable>
+</resources>

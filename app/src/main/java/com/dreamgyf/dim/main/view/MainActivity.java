@@ -1,12 +1,6 @@
 package com.dreamgyf.dim.main.view;
 
-import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,11 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
-import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.SearchFriendOrGroupActivity;
-import com.dreamgyf.dim.conversation.adapter.ConversationListViewAdapter;
-import com.dreamgyf.dim.base.broadcast.BroadcastActions;
 import com.dreamgyf.dim.base.mvp.activity.BaseActivity;
 import com.dreamgyf.dim.main.adapter.MainViewPagerAdapter;
 import com.dreamgyf.dim.main.model.MainModel;
@@ -31,8 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPresenter> implements IMainView {
 
@@ -137,5 +126,10 @@ public class MainActivity extends BaseActivity<MainModel, MainActivity, MainPres
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

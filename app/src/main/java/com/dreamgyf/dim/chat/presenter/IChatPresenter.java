@@ -5,4 +5,7 @@ import com.dreamgyf.dim.chat.model.ChatModel;
 import com.dreamgyf.dim.chat.view.ChatActivity;
 
 public interface IChatPresenter extends IBasePresenter<ChatModel, ChatActivity> {
+	int getMessageItemCount();
+
+	void sendMessage(String text);
 }

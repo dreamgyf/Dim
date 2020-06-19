@@ -10,8 +10,10 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.Room;
 
 import com.dreamgyf.dim.base.mqtt.MessageReceiveHandler;
+import com.dreamgyf.dim.database.AppDatabase;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -20,117 +22,122 @@ import java.util.List;
 
 public class MainApplication extends Application {
 
-    private static MainApplication INSTANCE;
+	private static MainApplication INSTANCE;
 
-    public static MainApplication getInstance() {
-        return INSTANCE;
-    }
+	public static MainApplication getInstance() {
+		return INSTANCE;
+	}
 
-    private int activityCount = 0;
+	private int activityCount = 0;
 
-    private NotificationManager notificationManager;
+	private NotificationManager notificationManager;
 
-    private List<OnActivityPauseListener> mPauseListenerList = new ArrayList<>();
+	private volatile AppDatabase mAppDatabase;
 
-    public interface OnActivityPauseListener {
-        void onPause();
-    }
+	private List<OnActivityPauseListener> mPauseListenerList = new ArrayList<>();
 
-    public void addOnActivityPauseListener(OnActivityPauseListener listener) {
-        mPauseListenerList.add(listener);
-    }
+	public interface OnActivityPauseListener {
+		void onPause();
+	}
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+	public void addOnActivityPauseListener(OnActivityPauseListener listener) {
+		mPauseListenerList.add(listener);
+	}
 
-        INSTANCE = this;
+	@Override
+	public void onCreate() {
+		super.onCreate();
 
-        initNotification();
-        createMessageReceiveHandler();
+		INSTANCE = this;
 
-        String test = "@@verify@@@@remark@@";
-        int verifyPos = test.indexOf("@@verify@@");
-        int remarkPos = test.indexOf("@@remark@@");
-        String verify = test.substring(verifyPos + 10,remarkPos);
-        String remark = test.substring(remarkPos + 10);
-        String[] testArray = test.split("@@DIM@@");
+		initNotification();
+		createMessageReceiveHandler();
 
+		registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+			@Override
+			public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
 
-        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
-            @Override
-            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+			}
 
-            }
+			@Override
+			public void onActivityStarted(@NonNull Activity activity) {
+				Log.d("Activity", "one activity started");
+				activityCount++;
+				notificationManager.cancelAll();
+			}
 
-            @Override
-            public void onActivityStarted(@NonNull Activity activity) {
-                Log.d("Activity","one activity started");
-                activityCount++;
-                notificationManager.cancelAll();
-            }
+			@Override
+			public void onActivityResumed(@NonNull Activity activity) {
 
-            @Override
-            public void onActivityResumed(@NonNull Activity activity) {
+			}
 
-            }
+			@Override
+			public void onActivityPaused(@NonNull Activity activity) {
+				for (OnActivityPauseListener listener : mPauseListenerList) {
+					if (listener != null) {
+						listener.onPause();
+					}
+				}
+			}
 
-            @Override
-            public void onActivityPaused(@NonNull Activity activity) {
-                for(OnActivityPauseListener listener : mPauseListenerList) {
-                    if(listener != null) {
-                        listener.onPause();
-                    }
-                }
-            }
+			@Override
+			public void onActivityStopped(@NonNull Activity activity) {
+				Log.d("Activity", "one activity stopped");
+				activityCount--;
+			}
 
-            @Override
-            public void onActivityStopped(@NonNull Activity activity) {
-                Log.d("Activity","one activity stopped");
-                activityCount--;
-            }
+			@Override
+			public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
 
-            @Override
-            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+			}
 
-            }
+			@Override
+			public void onActivityDestroyed(@NonNull Activity activity) {
 
-            @Override
-            public void onActivityDestroyed(@NonNull Activity activity) {
+			}
+		});
+	}
 
-            }
-        });
-    }
+	private void createMessageReceiveHandler() {
+		try {
+			Constructor<MessageReceiveHandler> constructor = MessageReceiveHandler.class.getDeclaredConstructor(MainApplication.class);
+			constructor.setAccessible(true);
+			MessageReceiveHandler object = constructor.newInstance(this);
+			Field instance = MessageReceiveHandler.class.getDeclaredField("INSTANCE");
+			instance.setAccessible(true);
+			instance.set(object, object);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    private void createMessageReceiveHandler() {
-        try {
-            Constructor<MessageReceiveHandler> constructor =  MessageReceiveHandler.class.getDeclaredConstructor(MainApplication.class);
-            constructor.setAccessible(true);
-            MessageReceiveHandler object = constructor.newInstance(this);
-            Field instance = MessageReceiveHandler.class.getDeclaredField("INSTANCE");
-            instance.setAccessible(true);
-            instance.set(object,object);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	private void initNotification() {
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			String channelId = "Message";
+			String channelName = "聊天消息";
+			int importance = NotificationManager.IMPORTANCE_HIGH;
+			NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
+			notificationManager.createNotificationChannel(channel);
+		}
+	}
 
-    private void initNotification() {
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "Message";
-            String channelName = "聊天消息";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
-            notificationManager.createNotificationChannel(channel);
-        }
-    }
+	public boolean isAppBackground() {
+		return activityCount == 0;
+	}
 
-    public boolean isAppBackground() {
-        return activityCount == 0;
-    }
+	public NotificationManager getNotificationManager() {
+		return notificationManager;
+	}
 
-    public NotificationManager getNotificationManager() {
-        return notificationManager;
-    }
+	public AppDatabase getDatabase() {
+		if (mAppDatabase == null) {
+			synchronized (this) {
+				if (mAppDatabase == null) {
+					mAppDatabase = Room.databaseBuilder(this, AppDatabase.class,"dim.db").build();
+				}
+			}
+		}
+		return mAppDatabase;
+	}
 }

@@ -2,23 +2,26 @@ package com.dreamgyf.dim.base.mqtt;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.content.Intent;
-import android.os.Parcelable;
 import android.util.Log;
 
 import com.dreamgyf.dim.MainApplication;
-import com.dreamgyf.dim.base.broadcast.BroadcastActions;
+import com.dreamgyf.dim.base.enums.ChatType;
+import com.dreamgyf.dim.base.enums.MessageType;
 import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
 import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.database.entity.UserMessage;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
-import com.dreamgyf.dim.entity.Message;
 import com.dreamgyf.dim.entity.httpresp.User;
+import com.dreamgyf.dim.eventbus.event.ConversationEvent;
+import com.dreamgyf.dim.eventbus.event.UserMessageEvent;
 import com.dreamgyf.dim.utils.NameUtils;
 import com.dreamgyf.dim.utils.NotificationUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,9 +29,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.sql.Timestamp;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +42,8 @@ public class MessageReceiveHandler {
 	private MainApplication mApplication;
 
 	private NotificationManager mNotificationManager;
+
+	private EventBus mEventBus = EventBus.getDefault();
 
 	private MessageReceiveHandler(MainApplication application) {
 		this.mApplication = application;
@@ -71,25 +75,19 @@ public class MessageReceiveHandler {
 						}
 						//更新会话数据
 						Conversation conversation = new Conversation();
-						conversation.setType(Conversation.Type.USER);
+						conversation.setType(ChatType.USER);
 						conversation.setUser(friend);
 						conversation.setCurrentMessage(message);
-						mApplication.sendBroadcast(Conversation.createBroadcast(conversation));
+						mEventBus.post(new ConversationEvent(conversation));
 						//更新聊天数据
-						List<Message> messageList = StaticData.friendMessageMap.get(friendId);
-						if (messageList == null)
-							messageList = new ArrayList<>();
-						Message m = new Message();
-						m.setUser(friend);
-						m.setType(Message.Type.RECEIVE_TEXT);
-						m.setContent(message);
-						messageList.add(m);
-						StaticData.friendMessageMap.put(friendId, messageList);
-						//广播通知更新
-						Intent updateMessage = new Intent();
-						updateMessage.setAction(BroadcastActions.UPDATE_MESSAGE);
-						updateMessage.putExtra("user", (Parcelable) friend);
-						mApplication.sendBroadcast(updateMessage);
+						UserMessage userMessage = new UserMessage();
+						userMessage.myId = StaticData.my.getId();
+						userMessage.userId = friendId;
+						userMessage.messageType = MessageType.Analyzer.analyze(true, message);
+						userMessage.content = message;
+						userMessage.receiveTime = new Timestamp(System.currentTimeMillis());
+						mApplication.getDatabase().userMessageDao().insertUserMessage(userMessage);
+						mEventBus.post(new UserMessageEvent(userMessage));
 						break;
 					}
 				}
@@ -110,8 +108,9 @@ public class MessageReceiveHandler {
 				int userId = topicRes.getFromId();
 				int groupId = topicRes.getToId();
 				for (Group group : StaticData.groupList) {
-					if (group.getId()== groupId) {
+					if (group.getId() == groupId) {
 						Conversation conversation = new Conversation();
+						conversation.setType(ChatType.GROUP);
 						conversation.setGroup(group);
 						try {
 							URL url = new URL(StaticData.DOMAIN + "/userinfo");
@@ -139,10 +138,7 @@ public class MessageReceiveHandler {
 								User user = new Gson().fromJson(jsonObject, User.class);
 								conversation.setUser(user);
 								conversation.setCurrentMessage(message);
-								StaticData.addConversation(conversation);
-								Intent updateConversation = new Intent();
-								updateConversation.setAction(BroadcastActions.UPDATE_CONVERSATION);
-								mApplication.sendBroadcast(updateConversation);
+								mEventBus.post(new ConversationEvent(conversation));
 							}
 						} catch (IOException e) {
 							e.printStackTrace();

@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
-import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.base.enums.ChatType;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.sharedpreferences.DataAccessUtils;
 import com.dreamgyf.dim.utils.NameUtils;
@@ -66,7 +66,7 @@ public class ConversationListViewAdapter extends BaseAdapter {
         }
         Conversation conversation = list.get(position);
         switch (conversation.getType()) {
-            case Conversation.Type.USER: {
+            case ChatType.USER: {
                 //设置头像
                 GetAvatarTask getAvatarTask = new GetAvatarTask(context,viewHolder.avatar);
                 getAvatarTask.execute(conversation.getUser().getAvatarId());
@@ -74,7 +74,7 @@ public class ConversationListViewAdapter extends BaseAdapter {
                 viewHolder.message.setText(conversation.getCurrentMessage());
                 break;
             }
-            case Conversation.Type.GROUP: {
+            case ChatType.GROUP: {
                 viewHolder.name.setText(conversation.getGroup().getName());
                 viewHolder.message.setText(NameUtils.getUsername(conversation.getUser()) + ":" + conversation.getCurrentMessage());
                 break;
@@ -86,7 +86,7 @@ public class ConversationListViewAdapter extends BaseAdapter {
     public void update(Conversation conversation) {
         synchronized (list) {
             switch (conversation.getType()) {
-                case Conversation.Type.USER: {
+                case ChatType.USER: {
                     for(int i = 0;i < list.size();i++) {
                         if(conversation.getUser().getId().equals(list.get(i).getUser().getId())) {
                             list.remove(i);
@@ -96,7 +96,7 @@ public class ConversationListViewAdapter extends BaseAdapter {
                     list.add(0,conversation);
                     break;
                 }
-                case Conversation.Type.GROUP: {
+                case ChatType.GROUP: {
                     break;
                 }
             }

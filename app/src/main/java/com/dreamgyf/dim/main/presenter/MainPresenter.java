@@ -1,24 +1,16 @@
 package com.dreamgyf.dim.main.presenter;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.view.View;
 
-import com.dreamgyf.dim.base.broadcast.BroadcastActions;
+import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.base.mqtt.MessageReceiveHandler;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.contacts.presenter.ContactsPresenter;
-import com.dreamgyf.dim.contacts.view.ContactsView;
 import com.dreamgyf.dim.conversation.presenter.ConversationPresenter;
-import com.dreamgyf.dim.conversation.view.ConversationView;
-import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.main.model.MainModel;
 import com.dreamgyf.dim.main.view.MainActivity;
 import com.dreamgyf.dim.my.presenter.MyPresenter;
-import com.dreamgyf.dim.my.view.MyView;
 
 public class MainPresenter extends BasePresenter<MainModel, MainActivity> implements IMainPresenter {
 
@@ -45,6 +37,7 @@ public class MainPresenter extends BasePresenter<MainModel, MainActivity> implem
 	@Override
 	protected void onDetach() {
 		MessageReceiveHandler.getInstance().stop();
+		MainApplication.getInstance().getDatabase().close();
 		mConversationPresenter.detach();
 		mContactsPresenter.detach();
 		mMyPresenter.detach();
