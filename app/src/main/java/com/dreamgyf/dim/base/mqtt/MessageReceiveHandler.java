@@ -12,7 +12,7 @@ import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.database.entity.UserMessage;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Group;
-import com.dreamgyf.dim.entity.httpresp.User;
+import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.eventbus.event.ConversationEvent;
 import com.dreamgyf.dim.eventbus.event.UserMessageEvent;
 import com.dreamgyf.dim.utils.NameUtils;
@@ -66,8 +66,8 @@ public class MessageReceiveHandler {
 				MqttTopicHandler.Result topicRes = messageEntity.getTopicRes();
 				String message = messageEntity.getMessage();
 				int friendId = topicRes.getFromId();
-				for (User friend : StaticData.friendList) {
-					if (friend.getId().equals(friendId)) {
+				for (Friend friend : StaticData.friendList) {
+					if (friend.getId() == friendId) {
 						if (mApplication.isAppBackground()) {
 							//通知
 							Notification notification = NotificationUtils.build(mApplication, NameUtils.getUsername(friend), message);
@@ -76,7 +76,7 @@ public class MessageReceiveHandler {
 						//更新会话数据
 						Conversation conversation = new Conversation();
 						conversation.setType(ChatType.USER);
-						conversation.setUser(friend);
+						conversation.setFriend(friend);
 						conversation.setCurrentMessage(message);
 						mEventBus.post(new ConversationEvent(conversation));
 						//更新聊天数据
@@ -135,8 +135,8 @@ public class MessageReceiveHandler {
 									resp += line;
 								in.close();
 								JsonObject jsonObject = new JsonParser().parse(resp).getAsJsonObject();
-								User user = new Gson().fromJson(jsonObject, User.class);
-								conversation.setUser(user);
+								Friend friend = new Gson().fromJson(jsonObject, Friend.class);
+								conversation.setFriend(friend);
 								conversation.setCurrentMessage(message);
 								mEventBus.post(new ConversationEvent(conversation));
 							}

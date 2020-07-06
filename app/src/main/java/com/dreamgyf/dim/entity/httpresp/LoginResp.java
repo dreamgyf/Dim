@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.entity.httpresp;
 
+import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.entity.Group;
 
 import java.io.Serializable;
@@ -7,26 +8,26 @@ import java.util.List;
 
 public class LoginResp extends Response implements Serializable {
 
-    private User my;
+    private Friend my;
 
-    private List<User> friendList;
+    private List<Friend> friendList;
 
     private List<Group> groupList;
 
 
-    public User getMy() {
+    public Friend getMy() {
         return this.my;
     }
 
-    public void setMy(User my) {
+    public void setMy(Friend my) {
         this.my = my;
     }
 
-    public List<User> getFriendList() {
+    public List<Friend> getFriendList() {
         return this.friendList;
     }
 
-    public void setFriendList(List<User> friendList) {
+    public void setFriendList(List<Friend> friendList) {
         this.friendList = friendList;
     }
 

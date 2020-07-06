@@ -1,5 +1,8 @@
 package com.dreamgyf.dim.base.mvp.presenter;
 
+import android.content.Context;
+
+import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.base.mvp.model.IBaseModel;
 import com.dreamgyf.dim.base.mvp.view.IBaseView;
 
@@ -41,5 +44,12 @@ public abstract class BasePresenter<M extends IBaseModel, V extends IBaseView> i
 
 	public V getView() {
 		return mView;
+	}
+
+	public Context getContext() {
+		if(mView instanceof Context) {
+			return (Context) mView;
+		}
+		return MainApplication.getInstance().getApplicationContext();
 	}
 }

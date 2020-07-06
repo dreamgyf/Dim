@@ -1,14 +1,12 @@
 package com.dreamgyf.dim.entity;
 
-import com.dreamgyf.dim.entity.httpresp.User;
-
 import java.io.Serializable;
 
 public class Conversation implements Serializable {
 
     private int type;
 
-    private User user;
+    private Friend mFriend;
 
     private Group group;
 
@@ -22,12 +20,12 @@ public class Conversation implements Serializable {
         this.type = type;
     }
 
-    public User getUser() {
-        return user;
+    public Friend getFriend() {
+        return mFriend;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setFriend(Friend friend) {
+        this.mFriend = friend;
     }
 
     public Group getGroup() {

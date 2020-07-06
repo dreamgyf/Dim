@@ -7,7 +7,7 @@
 	android:layout_height="match_parent"
 	android:background="@drawable/login_background"
 	android:fitsSystemWindows="true"
-	tools:context=".splash.view.SplashActivity">
+	tools:context=".bizpage.splash.view.SplashActivity">
 
 	<ImageView
 		android:layout_width="530dp"

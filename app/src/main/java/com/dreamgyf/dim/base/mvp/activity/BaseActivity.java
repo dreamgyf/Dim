@@ -10,7 +10,7 @@ import com.dreamgyf.dim.base.mvp.model.IBaseModel;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.base.mvp.view.IBaseView;
 
-public abstract class BaseActivity<M extends IBaseModel,V extends BaseActivity,P extends BasePresenter<M,V>> extends AppCompatActivity implements IBaseView {
+public abstract class BaseActivity<M extends IBaseModel,V extends IBaseView,P extends BasePresenter<M,V>> extends AppCompatActivity implements IBaseView {
 
 	private P mPresenter;
 

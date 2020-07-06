@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.asynctask.GetAvatarTask;
-import com.dreamgyf.dim.entity.httpresp.User;
+import com.dreamgyf.dim.entity.Friend;
 
 import java.util.List;
 
@@ -18,9 +18,9 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
 
     private Context context;
 
-    private List<User> dataList;
+    private List<Friend> dataList;
 
-    public SearchFriendListViewAdapter(Context context, List<User> dataList) {
+    public SearchFriendListViewAdapter(Context context, List<Friend> dataList) {
         this.context = context;
         this.dataList = dataList;
     }

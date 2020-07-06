@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SearchFriendOrGroupActivity">
+    tools:context=".bizpage.searchcontacts.view.SearchContactsActivity">
 
     <LinearLayout
         android:id="@+id/top"
@@ -88,7 +88,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:visibility="invisible"
+            android:visibility="gone"
             android:id="@+id/addGroupView"
             android:layout_width="0dp"
             android:layout_height="0dp"

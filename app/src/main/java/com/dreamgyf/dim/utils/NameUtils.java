@@ -1,18 +1,18 @@
 package com.dreamgyf.dim.utils;
 
-import com.dreamgyf.dim.entity.httpresp.User;
+import com.dreamgyf.dim.entity.Friend;
 
 public class NameUtils {
 
-	public static String getUsername(User user) {
-		if(user.getRemarkName() != null) {
-			return user.getRemarkName();
+	public static String getUsername(Friend friend) {
+		if(friend.getRemarkName() != null) {
+			return friend.getRemarkName();
 		}
-		else if(user.getNickname() != null) {
-			return user.getNickname();
+		else if(friend.getNickname() != null) {
+			return friend.getNickname();
 		}
 		else {
-			return user.getUsername();
+			return friend.getUsername();
 		}
 	}
 }
