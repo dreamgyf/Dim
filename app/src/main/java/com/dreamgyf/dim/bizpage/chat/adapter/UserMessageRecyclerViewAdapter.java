@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.bizpage.chat.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.base.enums.MessageType;
 import com.dreamgyf.dim.database.entity.UserMessage;
 import com.dreamgyf.dim.entity.Friend;
+import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +41,7 @@ public class UserMessageRecyclerViewAdapter extends RecyclerView.Adapter<Recycle
 			case R.layout.recycler_view_message_receive_text_item:
 				((TextViewHolder) holder).message.setText(mMessageList.get(position).content);
 				//设置头像
-				GetAvatarTask getAvatarTask = new GetAvatarTask(context, ((TextViewHolder) holder).avatar);
-				getAvatarTask.execute(mFriend.getAvatarId());
+				ImageLoader.with((Activity) context).loadAvatar(mFriend.getAvatarId()).into(((TextViewHolder) holder).avatar);
 				break;
 		}
 	}

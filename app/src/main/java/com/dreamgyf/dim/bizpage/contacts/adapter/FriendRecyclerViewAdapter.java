@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.bizpage.contacts.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamgyf.dim.R;
 import com.dreamgyf.dim.bizpage.userinfo.UserInfoActivity;
-import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecyclerViewAdapter.ViewHolder> {
 
@@ -55,8 +56,7 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
         }
         holder.name.setText(username);
         //设置头像
-        GetAvatarTask getAvatarTask = new GetAvatarTask(context,holder.avatar);
-        getAvatarTask.execute(StaticData.friendList.get(position).getAvatarId());
+        ImageLoader.with((Activity) context).loadAvatar(StaticData.friendList.get(position).getAvatarId()).into(holder.avatar);
         //点击事件
         holder.itemView.setOnClickListener((view) ->
                 context.startActivity(UserInfoActivity.createIntent(context, StaticData.friendList.get(position))));

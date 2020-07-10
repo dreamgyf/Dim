@@ -16,11 +16,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.bizpage.addcontacts.view.AddContactsActivity;
 import com.dreamgyf.dim.bizpage.chat.view.ChatActivity;
 import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 public class UserInfoActivity extends AppCompatActivity {
 
@@ -91,8 +91,7 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     private void renderUserInfo() {
-        GetAvatarTask task = new GetAvatarTask(this,mIvAvatar);
-        task.execute(mUser.getAvatarId());
+        ImageLoader.with(this).loadAvatar(mUser.getAvatarId()).into(mIvAvatar);
         mTvNickname.setText(mUser.getNickname() != null ? mUser.getNickname() : mUser.getUsername());
         mTvUsername.setText("用户名 : " + mUser.getUsername());
     }

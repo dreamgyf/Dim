@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.bizpage.conversation.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,11 +10,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.base.enums.ChatType;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.sharedpreferences.DataAccessUtils;
 import com.dreamgyf.dim.utils.NameUtils;
+import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 import java.util.LinkedList;
 
@@ -68,8 +69,7 @@ public class ConversationListViewAdapter extends BaseAdapter {
         switch (conversation.getType()) {
             case ChatType.USER: {
                 //设置头像
-                GetAvatarTask getAvatarTask = new GetAvatarTask(context,viewHolder.avatar);
-                getAvatarTask.execute(conversation.getFriend().getAvatarId());
+                ImageLoader.with((Activity) context).loadAvatar(conversation.getFriend().getAvatarId()).into(viewHolder.avatar);
                 viewHolder.name.setText(NameUtils.getUsername(conversation.getFriend()));
                 viewHolder.message.setText(conversation.getCurrentMessage());
                 break;

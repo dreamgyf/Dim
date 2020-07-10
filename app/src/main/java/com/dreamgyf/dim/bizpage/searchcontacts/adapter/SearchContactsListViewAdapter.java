@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.bizpage.searchcontacts.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,8 +104,7 @@ public class SearchContactsListViewAdapter extends BaseAdapter {
 
 	private void renderSearchFriendView(SearchFriendViewHolder viewHolder, User user) {
 		List<User> list = mDataList;
-		GetAvatarTask getAvatarTask = new GetAvatarTask(mContext,viewHolder.avatar);
-		getAvatarTask.execute(user.getAvatarId());
+		ImageLoader.with((Activity) mContext).loadAvatar(user.getAvatarId()).into(viewHolder.avatar);
 		viewHolder.userId.setText("(ID:" + user.getId() + ")");
 		viewHolder.nickname.setText(user.getNickname());
 		viewHolder.username.setText(user.getUsername());

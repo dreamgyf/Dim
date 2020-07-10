@@ -1,5 +1,6 @@
 package com.dreamgyf.dim.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.asynctask.GetAvatarTask;
 import com.dreamgyf.dim.entity.Friend;
+import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 import java.util.List;
 
@@ -62,8 +63,7 @@ public class SearchFriendListViewAdapter extends BaseAdapter {
         else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-        GetAvatarTask getAvatarTask = new GetAvatarTask(context,viewHolder.avatar);
-        getAvatarTask.execute(dataList.get(position).getAvatarId());
+        ImageLoader.with((Activity) context).loadAvatar(dataList.get(position).getAvatarId()).into(viewHolder.avatar);
         viewHolder.userId.setText("(ID:" + dataList.get(position).getId() + ")");
         viewHolder.nickname.setText(dataList.get(position).getNickname());
         viewHolder.username.setText(dataList.get(position).getUsername());
