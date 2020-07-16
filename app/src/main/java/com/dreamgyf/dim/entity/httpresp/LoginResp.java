@@ -6,7 +6,7 @@ import com.dreamgyf.dim.entity.Group;
 import java.io.Serializable;
 import java.util.List;
 
-public class LoginResp extends Response implements Serializable {
+public class LoginResp implements Serializable {
 
     private Friend my;
 

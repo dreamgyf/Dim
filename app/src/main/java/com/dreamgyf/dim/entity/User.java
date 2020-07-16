@@ -3,9 +3,11 @@ package com.dreamgyf.dim.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.dreamgyf.dim.utils.NameUtils;
+
 import java.io.Serializable;
 
-public class User implements Serializable, Parcelable, Comparable<User> {
+public class User extends Contact implements Serializable, Parcelable, Comparable<User> {
 
 	private int id;
 
@@ -47,21 +49,11 @@ public class User implements Serializable, Parcelable, Comparable<User> {
 		this.avatarId = avatarId;
 	}
 
+	public User() { }
+
 	@Override
 	public int compareTo(User user) {
-		String thisUsername;
-		if (this.nickname != null) {
-			thisUsername = this.nickname;
-		} else {
-			thisUsername = this.username;
-		}
-		String thatUsername;
-		if (user.nickname != null) {
-			thatUsername = user.nickname;
-		} else {
-			thatUsername = user.username;
-		}
-		return thisUsername.compareTo(thatUsername);
+		return NameUtils.getUsername(this).compareTo(NameUtils.getUsername(user));
 	}
 
 	@Override
@@ -95,4 +87,5 @@ public class User implements Serializable, Parcelable, Comparable<User> {
 			return new User[size];
 		}
 	};
+
 }

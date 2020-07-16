@@ -6,17 +6,17 @@ import android.os.Looper;
 import com.dreamgyf.dim.base.http.HttpObserver;
 import com.dreamgyf.dim.base.mqtt.callback.MqttMessageCallback;
 import com.dreamgyf.dim.base.mqtt.exception.MqttConnectException;
-import com.dreamgyf.dim.data.StaticData;
-import com.dreamgyf.dim.entity.httpresp.LoginResp;
 import com.dreamgyf.dim.bizpage.login.api.LoginApiService;
 import com.dreamgyf.dim.bizpage.login.listener.OnLoginListener;
+import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.entity.httpresp.LoginResp;
+import com.dreamgyf.dim.utils.GroupUtils;
+import com.dreamgyf.dim.utils.UserUtils;
 import com.dreamgyf.mqtt.MqttVersion;
 import com.dreamgyf.mqtt.client.MqttClient;
 import com.dreamgyf.mqtt.client.MqttTopic;
 import com.dreamgyf.mqtt.client.callback.MqttConnectCallback;
 import com.dreamgyf.mqtt.client.callback.MqttSubscribeCallback;
-
-import java.util.Collections;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
@@ -112,10 +112,9 @@ public class LoginModel implements ILoginModel {
 						StaticData.mqttClient.subscribe(new MqttTopic("/Dim/" + loginResp.getMy().getId() + "/#").setQoS(2), new MqttSubscribeCallback() {
 							@Override
 							public void onSuccess(String s, int i) {
-								StaticData.my = loginResp.getMy();
-								StaticData.friendList = loginResp.getFriendList();
-								StaticData.groupList = loginResp.getGroupList();
-								Collections.sort(StaticData.friendList);
+								UserUtils.updateMy(loginResp.getMy());
+								UserUtils.addFriend(loginResp.getFriendList());
+								GroupUtils.addGroup(loginResp.getGroupList());
 								if (mOnLoginListener != null) {
 									mHandler.post(() -> mOnLoginListener.onLoginSuccess(mUsername,mPasswordSha256));
 								}

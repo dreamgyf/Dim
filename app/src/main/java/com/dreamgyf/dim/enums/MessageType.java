@@ -1,4 +1,4 @@
-package com.dreamgyf.dim.base.enums;
+package com.dreamgyf.dim.enums;
 
 public class MessageType {
 

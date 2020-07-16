@@ -17,14 +17,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamgyf.dim.R;
-import com.dreamgyf.dim.base.enums.ChatType;
 import com.dreamgyf.dim.base.mvp.activity.BaseActivity;
-import com.dreamgyf.dim.bizpage.chat.adapter.GroupMessageRecyclerViewAdapter;
 import com.dreamgyf.dim.bizpage.chat.listener.OnMessageReceivedListener;
 import com.dreamgyf.dim.bizpage.chat.model.ChatModel;
 import com.dreamgyf.dim.bizpage.chat.presenter.ChatPresenter;
-import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Friend;
+import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.enums.ChatType;
 import com.dreamgyf.dim.utils.NameUtils;
 import com.dreamgyf.loadingrecyclerview.LoadingRecyclerView;
 
@@ -47,8 +46,6 @@ public class ChatActivity extends BaseActivity<ChatModel,ChatActivity, ChatPrese
     private EditText textInput;
 
     private ImageView sendButton;
-
-    private GroupMessageRecyclerViewAdapter mUserMessageRecyclerViewAdapter;
 
     public static Intent createIntent(Context context, Friend friend) {
         Intent intent = new Intent(context,ChatActivity.class);
@@ -152,6 +149,7 @@ public class ChatActivity extends BaseActivity<ChatModel,ChatActivity, ChatPrese
         });
     }
 
+    @Override
     public void scrollToBottom(boolean smooth) {
         if(smooth) {
             if(!isRecyclerViewScrolling && mPresenter.getMessageItemCount() != 0) {

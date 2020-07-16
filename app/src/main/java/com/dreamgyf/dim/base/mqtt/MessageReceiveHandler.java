@@ -5,37 +5,36 @@ import android.app.NotificationManager;
 import android.util.Log;
 
 import com.dreamgyf.dim.MainApplication;
-import com.dreamgyf.dim.base.enums.ChatType;
-import com.dreamgyf.dim.base.enums.MessageType;
+import com.dreamgyf.dim.base.http.HttpObserver;
 import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
 import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.database.entity.GroupMessage;
 import com.dreamgyf.dim.database.entity.UserMessage;
 import com.dreamgyf.dim.entity.Conversation;
-import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Friend;
-import com.dreamgyf.dim.eventbus.event.ConversationEvent;
-import com.dreamgyf.dim.eventbus.event.UserMessageEvent;
+import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.enums.ConversationType;
+import com.dreamgyf.dim.enums.MessageType;
+import com.dreamgyf.dim.utils.GroupUtils;
 import com.dreamgyf.dim.utils.NameUtils;
 import com.dreamgyf.dim.utils.NotificationUtils;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.dreamgyf.dim.utils.UserUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MessageReceiveHandler {
+
+	static class NotifyTag {
+		final static String FRIEND_CHAT = "friend_chat";
+		final static String GROUP_CHAT = "group_chat";
+		final static String FRIEND_REQUEST = "friend_request";
+		final static String GROUP_REQUEST = "group_request";
+	}
 
 	private volatile static MessageReceiveHandler INSTANCE = null;
 
@@ -66,31 +65,35 @@ public class MessageReceiveHandler {
 				MqttTopicHandler.Result topicRes = messageEntity.getTopicRes();
 				String message = messageEntity.getMessage();
 				int friendId = topicRes.getFromId();
-				for (Friend friend : StaticData.friendList) {
-					if (friend.getId() == friendId) {
-						if (mApplication.isAppBackground()) {
-							//通知
-							Notification notification = NotificationUtils.build(mApplication, NameUtils.getUsername(friend), message);
-							mNotificationManager.notify(friend.getId(), notification);
-						}
-						//更新会话数据
-						Conversation conversation = new Conversation();
-						conversation.setType(ChatType.USER);
-						conversation.setFriend(friend);
-						conversation.setCurrentMessage(message);
-						mEventBus.post(new ConversationEvent(conversation));
-						//更新聊天数据
-						UserMessage userMessage = new UserMessage();
-						userMessage.myId = StaticData.my.getId();
-						userMessage.userId = friendId;
-						userMessage.messageType = MessageType.Analyzer.analyze(true, message);
-						userMessage.content = message;
-						userMessage.receiveTime = new Timestamp(System.currentTimeMillis());
-						mApplication.getDatabase().userMessageDao().insertUserMessage(userMessage);
-						mEventBus.post(new UserMessageEvent(userMessage));
-						break;
-					}
+				Friend friend = UserUtils.findFriend(friendId);
+				if(friend == null) {
+					continue;
 				}
+				String title = NameUtils.getUsername(friend);
+				//后续要对message做处理
+				String subtitle = message;
+				String content = message;
+				if (mApplication.isAppBackground()) {
+					Notification notification = NotificationUtils.build(mApplication, title, subtitle);
+					mNotificationManager.notify(NotifyTag.FRIEND_CHAT, friendId, notification);
+				}
+				//更新会话数据
+				Conversation conversation = new Conversation();
+				conversation.setType(ConversationType.FRIEND_CHAT);
+				conversation.setId(friendId);
+				conversation.setAvatarId(friend.getAvatarId());
+				conversation.setTitle(title);
+				conversation.setSubtitle(subtitle);
+				mEventBus.post(conversation);
+				//更新聊天数据
+				UserMessage userMessage = new UserMessage();
+				userMessage.myId = UserUtils.my().getId();
+				userMessage.userId = friendId;
+				userMessage.messageType = MessageType.Analyzer.analyze(true, message);
+				userMessage.content = content;
+				userMessage.receiveTime = new Timestamp(System.currentTimeMillis());
+				mApplication.getDatabase().userMessageDao().insertUserMessage(userMessage);
+				mEventBus.post(userMessage);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -107,45 +110,80 @@ public class MessageReceiveHandler {
 				String message = messageEntity.getMessage();
 				int userId = topicRes.getFromId();
 				int groupId = topicRes.getToId();
-				for (Group group : StaticData.groupList) {
-					if (group.getId() == groupId) {
-						Conversation conversation = new Conversation();
-						conversation.setType(ChatType.GROUP);
-						conversation.setGroup(group);
-						try {
-							URL url = new URL(StaticData.DOMAIN + "/userinfo");
-							HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-							httpURLConnection.setRequestMethod("POST");
-							httpURLConnection.setRequestProperty("Content-Result", "application/json; charset=UTF-8");
-							Map<String, Object> params = new HashMap<>();
-							params.put("myId", StaticData.my.getId());
-							params.put("friendId", userId);
-							String post = new Gson().toJson(params);
-							httpURLConnection.setDoOutput(true);
-							httpURLConnection.setDoInput(true);
-							OutputStream os = httpURLConnection.getOutputStream();
-							os.write(post.getBytes("UTF-8"));
-							os.flush();
-							os.close();
-							if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-								BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-								String resp = "";
-								String line;
-								while ((line = in.readLine()) != null)
-									resp += line;
-								in.close();
-								JsonObject jsonObject = new JsonParser().parse(resp).getAsJsonObject();
-								Friend friend = new Gson().fromJson(jsonObject, Friend.class);
-								conversation.setFriend(friend);
-								conversation.setCurrentMessage(message);
-								mEventBus.post(new ConversationEvent(conversation));
-							}
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						break;
-					}
+				Group group = GroupUtils.findGroup(groupId);
+				if(group == null) {
+					continue;
 				}
+				//后续要对message做处理
+				String subtitle = message;
+				String content = message;
+				if (mApplication.isAppBackground()) {
+					Notification notification = NotificationUtils.build(mApplication, group.getName(), subtitle);
+					mNotificationManager.notify(NotifyTag.GROUP_CHAT, groupId, notification);
+				}
+				//更新会话数据
+				Conversation conversation = new Conversation();
+				conversation.setType(ConversationType.FRIEND_CHAT);
+				conversation.setId(groupId);
+				conversation.setAvatarId(0);
+				conversation.setTitle(group.getName());
+				conversation.setSubtitle(subtitle);
+				mEventBus.post(conversation);
+				GroupMessage groupMessage = new GroupMessage();
+				groupMessage.myId = UserUtils.my().getId();
+				groupMessage.userId = userId;
+				groupMessage.groupId = groupId;
+				groupMessage.messageType = MessageType.Analyzer.analyze(true, message);
+				groupMessage.content = content;
+				groupMessage.receiveTime = new Timestamp(System.currentTimeMillis());
+				mApplication.getDatabase().groupMessageDao().insertGroupMessage(groupMessage);
+				mEventBus.post(groupMessage);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	};
+
+	private Runnable mReceiveAddFriendRequest = () -> {
+		Thread.currentThread().setName("Thread-ReceiveAddFriendRequest");
+		while (isRunning) {
+			try {
+				MqttReceiveMessageEntity messageEntity = StaticData.receiveAddFriendRequestQueue.take();
+				MqttTopicHandler.Result topicRes = messageEntity.getTopicRes();
+				String message = messageEntity.getMessage();
+				int userId = topicRes.getFromId();
+				UserUtils.getUser(userId).subscribe(new HttpObserver<User>() {
+					@Override
+					public void onSuccess(User user) throws Throwable {
+						String title = "好友请求";
+						String subtitle = NameUtils.getUsername(user) + "想添加你为好友";
+						if (mApplication.isAppBackground()) {
+							Notification notification = NotificationUtils.build(mApplication, title, subtitle);
+							mNotificationManager.notify(NotifyTag.FRIEND_REQUEST, userId, notification);
+						}
+						//更新会话数据
+						Conversation conversation = new Conversation();
+						conversation.setType(ConversationType.FRIEND_CHAT);
+						conversation.setId(userId);
+						//TODO 设置好友请求头像为默认
+						conversation.setAvatarId(user.getAvatarId());
+						conversation.setTitle(title);
+						conversation.setSubtitle(subtitle);
+						mEventBus.post(conversation);
+						//TODO 更新好友请求界面
+						//TODO 将好友请求添加到数据库
+					}
+
+					@Override
+					public void onFailed(Throwable t) throws Throwable {
+
+					}
+
+					@Override
+					public void onCaughtThrowable(Throwable t) {
+
+					}
+				});
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -156,7 +194,8 @@ public class MessageReceiveHandler {
 		if (!isRunning) {
 			isRunning = true;
 			mExecutors.execute(mReceiveFriendMessage);
-//			mExecutors.execute(mReceiveGroupMessage);
+			mExecutors.execute(mReceiveGroupMessage);
+			mExecutors.execute(mReceiveAddFriendRequest);
 			Log.i("MessageReceiveHandler", "消息接收处理器已启动");
 		}
 	}

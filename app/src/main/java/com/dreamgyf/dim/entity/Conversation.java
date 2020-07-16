@@ -6,11 +6,13 @@ public class Conversation implements Serializable {
 
     private int type;
 
-    private Friend mFriend;
+    private int id;
 
-    private Group group;
+    private int avatarId;
 
-    private String currentMessage;
+    private String title;
+
+    private String subtitle;
 
     public int getType() {
         return type;
@@ -20,27 +22,35 @@ public class Conversation implements Serializable {
         this.type = type;
     }
 
-    public Friend getFriend() {
-        return mFriend;
+    public int getId() {
+        return id;
     }
 
-    public void setFriend(Friend friend) {
-        this.mFriend = friend;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public Group getGroup() {
-        return group;
+    public int getAvatarId() {
+        return avatarId;
     }
 
-    public void setGroup(Group group) {
-        this.group = group;
+    public void setAvatarId(int avatarId) {
+        this.avatarId = avatarId;
     }
 
-    public String getCurrentMessage() {
-        return currentMessage;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCurrentMessage(String currentMessage) {
-        this.currentMessage = currentMessage;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getSubtitle() {
+        return subtitle;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
     }
 }

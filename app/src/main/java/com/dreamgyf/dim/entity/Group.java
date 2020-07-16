@@ -3,9 +3,11 @@ package com.dreamgyf.dim.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.dreamgyf.dim.utils.NameUtils;
+
 import java.io.Serializable;
 
-public class Group implements Serializable, Parcelable {
+public class Group extends Contact implements Serializable, Parcelable, Comparable<Group> {
 
     private int id;
 
@@ -53,4 +55,9 @@ public class Group implements Serializable, Parcelable {
             return new Group[size];
         }
     };
+
+    @Override
+    public int compareTo(Group group) {
+        return NameUtils.getGroupName(this).compareTo(NameUtils.getGroupName(group));
+    }
 }

@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 
 import com.dreamgyf.dim.entity.Conversation;
 import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.HashMap;
@@ -32,8 +31,8 @@ public class DataAccessUtils {
         return res;
     }
 
-    public static LinkedList<Conversation> getConversationList(Context context) {
-        SharedPreferences data = context.getSharedPreferences("data",MODE_PRIVATE);
+    public static LinkedList<Conversation> getConversationList(Context context, int id) {
+        SharedPreferences data = context.getSharedPreferences("data_" + id, MODE_PRIVATE);
         String json = data.getString("conversation",null);
         if(json == null) {
             return new LinkedList<>();
@@ -42,8 +41,8 @@ public class DataAccessUtils {
         return gson.fromJson(json,new TypeToken<LinkedList<Conversation>>(){}.getType());
     }
 
-    public static void saveConversationList(Context context,LinkedList<Conversation> conversationList) {
-        SharedPreferences data = context.getSharedPreferences("data",MODE_PRIVATE);
+    public static void saveConversationList(Context context, int id, LinkedList<Conversation> conversationList) {
+        SharedPreferences data = context.getSharedPreferences("data_" + id, MODE_PRIVATE);
         SharedPreferences.Editor editor = data.edit();
         Gson gson = new Gson();
         editor.putString("conversation",gson.toJson(conversationList));

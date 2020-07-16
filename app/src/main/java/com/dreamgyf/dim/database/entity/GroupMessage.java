@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey;
 
 import java.sql.Timestamp;
 
-@Entity(tableName = "user_message")
-public class UserMessage extends Message {
+@Entity(tableName = "group_message")
+public class GroupMessage extends Message {
 
 	@PrimaryKey(autoGenerate = true)
 	public int id;
@@ -15,8 +15,11 @@ public class UserMessage extends Message {
 	@ColumnInfo(name = "my_id", index = true)
 	public int myId;
 
-	@ColumnInfo(name = "user_id", index = true)
+	@ColumnInfo(name = "user_id")
 	public int userId;
+
+	@ColumnInfo(name = "group_id", index = true)
+	public int groupId;
 
 	@ColumnInfo(name = "message_type")
 	public int messageType;

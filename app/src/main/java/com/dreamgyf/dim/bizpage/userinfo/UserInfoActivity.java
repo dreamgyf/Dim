@@ -20,6 +20,7 @@ import com.dreamgyf.dim.bizpage.addcontacts.view.AddContactsActivity;
 import com.dreamgyf.dim.bizpage.chat.view.ChatActivity;
 import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.enums.IntentCode;
 import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 public class UserInfoActivity extends AppCompatActivity {
@@ -105,7 +106,7 @@ public class UserInfoActivity extends AppCompatActivity {
 
     private void initAddFriendButton() {
         bottomButton.setOnClickListener((view) -> {
-            startActivityForResult(AddContactsActivity.createIntent(this, mUser),0);
+            startActivityForResult(AddContactsActivity.createIntent(this, mUser), IntentCode.FINISH);
         });
     }
 
@@ -122,7 +123,8 @@ public class UserInfoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0 && resultCode == 0)
+        if (requestCode == IntentCode.FINISH && resultCode == IntentCode.FINISH) {
             finish();
+        }
     }
 }

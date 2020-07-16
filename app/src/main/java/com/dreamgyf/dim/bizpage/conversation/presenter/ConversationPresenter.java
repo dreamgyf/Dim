@@ -6,15 +6,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.dreamgyf.dim.MainApplication;
-import com.dreamgyf.dim.base.enums.ChatType;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.bizpage.chat.view.ChatActivity;
 import com.dreamgyf.dim.bizpage.conversation.adapter.ConversationListViewAdapter;
 import com.dreamgyf.dim.bizpage.conversation.model.ConversationModel;
 import com.dreamgyf.dim.bizpage.conversation.view.ConversationView;
 import com.dreamgyf.dim.entity.Conversation;
-import com.dreamgyf.dim.eventbus.event.ConversationEvent;
+import com.dreamgyf.dim.enums.ConversationType;
 import com.dreamgyf.dim.sharedpreferences.DataAccessUtils;
+import com.dreamgyf.dim.utils.GroupUtils;
+import com.dreamgyf.dim.utils.UserUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -68,19 +69,19 @@ public class ConversationPresenter extends BasePresenter<ConversationModel,Conve
 
 	public void initListView(ListView listView) {
 		this.mListView = listView;
-		mAdapter = new ConversationListViewAdapter(mContext, DataAccessUtils.getConversationList(mContext));
+		mAdapter = new ConversationListViewAdapter(mContext, DataAccessUtils.getConversationList(mContext, UserUtils.my().getId()));
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Conversation conversation = (Conversation) mAdapter.getItem(position);
 				switch (conversation.getType()) {
-					case ChatType.USER: {
-						mContext.startActivity(ChatActivity.createIntent(mContext,conversation.getFriend()));
+					case ConversationType.FRIEND_CHAT: {
+						mContext.startActivity(ChatActivity.createIntent(mContext, UserUtils.findFriend(conversation.getId())));
 						break;
 					}
-					case ChatType.GROUP: {
-						mContext.startActivity(ChatActivity.createIntent(mContext,conversation.getGroup()));
+					case ConversationType.GROUP_CHAT: {
+						mContext.startActivity(ChatActivity.createIntent(mContext, GroupUtils.findGroup(conversation.getId())));
 						break;
 					}
 				}
@@ -108,8 +109,7 @@ public class ConversationPresenter extends BasePresenter<ConversationModel,Conve
 	}
 
 	@Subscribe(threadMode = ThreadMode.MAIN)
-	public void onConversationEvent(ConversationEvent event) {
-		Conversation conversation = event.getConversation();
+	public void onConversationEvent(Conversation conversation) {
 		updateList(conversation);
 	}
 

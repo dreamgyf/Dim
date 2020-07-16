@@ -15,7 +15,9 @@ public class NotificationUtils {
 		Notification notification = builder.setContentTitle(title)
 				.setContentText(content)
 				.setSmallIcon(R.drawable.small_logo)
-				.setLargeIcon(BitmapFactory.decodeResource(context.getResources(),R.drawable.small_logo)).build();
+				.setLargeIcon(BitmapFactory.decodeResource(context.getResources(),R.drawable.small_logo))
+				.setWhen(System.currentTimeMillis())
+				.build();
 		notification.flags = Notification.FLAG_AUTO_CANCEL;
 		return notification;
 	}

@@ -15,27 +15,6 @@ public class Friend extends User {
 	}
 
 	@Override
-	public int compareTo(User user) {
-		String thisUsername;
-		if (this.remarkName != null) {
-			thisUsername = this.remarkName;
-		} else if (this.getNickname() != null) {
-			thisUsername = this.getNickname();
-		} else {
-			thisUsername = this.getUsername();
-		}
-		String thatUsername;
-		if(user instanceof Friend && ((Friend) user).getRemarkName() != null) {
-			thatUsername = ((Friend) user).getRemarkName();
-		} else if (user.getNickname() != null) {
-			thatUsername = user.getNickname();
-		} else {
-			thatUsername = user.getUsername();
-		}
-		return thisUsername.compareTo(thatUsername);
-	}
-
-	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		super.writeToParcel(dest, flags);
 		dest.writeString(remarkName);

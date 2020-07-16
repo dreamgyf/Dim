@@ -1,18 +1,24 @@
 package com.dreamgyf.dim.utils;
 
 import com.dreamgyf.dim.entity.Friend;
+import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.entity.User;
 
 public class NameUtils {
 
-	public static String getUsername(Friend friend) {
-		if(friend.getRemarkName() != null) {
-			return friend.getRemarkName();
+	public static String getUsername(User user) {
+		if(user instanceof Friend && ((Friend) user).getRemarkName() != null) {
+			return ((Friend) user).getRemarkName();
 		}
-		else if(friend.getNickname() != null) {
-			return friend.getNickname();
+		else if(user.getNickname() != null) {
+			return user.getNickname();
 		}
 		else {
-			return friend.getUsername();
+			return user.getUsername();
 		}
+	}
+
+	public static String getGroupName(Group group) {
+		return group.getName();
 	}
 }

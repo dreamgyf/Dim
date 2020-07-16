@@ -1,26 +1,23 @@
 package com.dreamgyf.dim.bizpage.chat.presenter;
 
-import android.app.Activity;
-
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.dreamgyf.dim.MainApplication;
-import com.dreamgyf.dim.base.enums.ChatType;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
-import com.dreamgyf.dim.bizpage.chat.adapter.GroupMessageRecyclerViewAdapter;
-import com.dreamgyf.dim.bizpage.chat.adapter.UserMessageRecyclerViewAdapter;
+import com.dreamgyf.dim.bizpage.chat.adapter.MessageRecyclerViewAdapter;
 import com.dreamgyf.dim.bizpage.chat.listener.OnMessageReceivedListener;
 import com.dreamgyf.dim.bizpage.chat.listener.OnMessageSendListener;
 import com.dreamgyf.dim.bizpage.chat.model.ChatModel;
 import com.dreamgyf.dim.bizpage.chat.view.ChatActivity;
-import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.bizpage.chat.view.IChatView;
+import com.dreamgyf.dim.database.entity.GroupMessage;
 import com.dreamgyf.dim.database.entity.Message;
 import com.dreamgyf.dim.database.entity.UserMessage;
 import com.dreamgyf.dim.entity.Conversation;
-import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.Friend;
-import com.dreamgyf.dim.eventbus.event.ConversationEvent;
-import com.dreamgyf.dim.eventbus.event.UserMessageEvent;
+import com.dreamgyf.dim.entity.Group;
+import com.dreamgyf.dim.enums.ChatType;
+import com.dreamgyf.dim.enums.ConversationType;
+import com.dreamgyf.dim.utils.NameUtils;
+import com.dreamgyf.dim.utils.UserUtils;
 import com.dreamgyf.loadingrecyclerview.LoadingRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -40,13 +37,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implements IChatPresenter {
 
-	private Activity mActivity;
+	private IChatView mView;
 
 	private ChatModel mModel;
 
 	private LoadingRecyclerView mRecyclerView;
 
-	private RecyclerView.Adapter mAdapter;
+	private MessageRecyclerViewAdapter mAdapter;
 
 	private int mType;
 
@@ -64,7 +61,7 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 
 	@Override
 	protected void onAttach() {
-		mActivity = getView();
+		mView = getView();
 		mEventBus.register(this);
 		mModel.setOnMessageSendListener(new OnMessageSendListener() {
 			@Override
@@ -73,13 +70,15 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 				if (chatType == ChatType.USER) {
 					//更新会话
 					Conversation conversation = new Conversation();
-					conversation.setType(ChatType.USER);
-					conversation.setFriend(mFriend);
-					conversation.setCurrentMessage(((UserMessage) message).content);
-					EventBus.getDefault().post(new ConversationEvent(conversation));
+					conversation.setType(ConversationType.FRIEND_CHAT);
+					conversation.setId(mFriend.getId());
+					conversation.setAvatarId(mFriend.getAvatarId());
+					conversation.setTitle(NameUtils.getUsername(mFriend));
+					conversation.setSubtitle(((UserMessage) message).content);
+					EventBus.getDefault().post(conversation);
 					//更新聊天页面
 					MainApplication.getInstance().getDatabase().userMessageDao().insertUserMessage((UserMessage) message);
-					mEventBus.post(new UserMessageEvent((UserMessage) message));
+					mEventBus.post((UserMessage) message);
 				}
 			}
 
@@ -105,10 +104,10 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 		mType = getView().getType();
 		if (mType == ChatType.USER) {
 			mFriend = getView().getFriend();
-			mRecyclerView.setAdapter(mAdapter = new UserMessageRecyclerViewAdapter(mActivity, mFriend));
+			mRecyclerView.setAdapter(mAdapter = new MessageRecyclerViewAdapter<Friend, UserMessage>(getContext(), mFriend));
 		} else if (mType == ChatType.GROUP) {
 			mGroup = getView().getGroup();
-			mRecyclerView.setAdapter(mAdapter = new GroupMessageRecyclerViewAdapter(mActivity, mGroup));
+			mRecyclerView.setAdapter(mAdapter = new MessageRecyclerViewAdapter<Group, GroupMessage>(getContext(), mGroup));
 		}
 		mRecyclerView.setLoadingListener(new LoadingRecyclerView.LoadingListener() {
 			@Override
@@ -126,7 +125,7 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 			Observable.create(new ObservableOnSubscribe<List<UserMessage>>() {
 				@Override
 				public void subscribe(@NonNull ObservableEmitter<List<UserMessage>> emitter) throws Throwable {
-					emitter.onNext(MainApplication.getInstance().getDatabase().userMessageDao().getUserMessageListByOffset(StaticData.my.getId(), mFriend.getId(), offset, limit));
+					emitter.onNext(MainApplication.getInstance().getDatabase().userMessageDao().getUserMessageListByOffset(UserUtils.my().getId(), mFriend.getId(), offset, limit));
 					emitter.onComplete();
 				}
 			})
@@ -140,7 +139,10 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 
 						@Override
 						public void onNext(@NonNull List<UserMessage> userMessages) {
-							((UserMessageRecyclerViewAdapter) mAdapter).loadUserMessageRecord(userMessages);
+							mAdapter.loadUserMessageRecord(userMessages);
+							if(offset == 0) {
+								mView.scrollToBottom(false);
+							}
 							if (userMessages.size() < limit) {
 								mRecyclerView.disableLoad(LoadingRecyclerView.Direction.START);
 							}
@@ -160,12 +162,19 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 	}
 
 	public void addUserMessage(UserMessage userMessage) {
-		if (mType == ChatType.USER && userMessage.myId == StaticData.my.getId() && userMessage.userId == mFriend.getId()) {
-			if (mAdapter instanceof UserMessageRecyclerViewAdapter) {
-				((UserMessageRecyclerViewAdapter) mAdapter).addUserMessage(userMessage);
-				if (mOnMessageReceivedListener != null) {
-					mOnMessageReceivedListener.onReceived(userMessage.content);
-				}
+		if (mType == ChatType.USER && userMessage.myId == UserUtils.my().getId() && userMessage.userId == mFriend.getId()) {
+			mAdapter.addMessage(userMessage);
+			if (mOnMessageReceivedListener != null) {
+				mOnMessageReceivedListener.onReceived(userMessage.content);
+			}
+		}
+	}
+
+	public void addGroupMessage(GroupMessage groupMessage) {
+		if (mType == ChatType.USER && groupMessage.myId == UserUtils.my().getId() && groupMessage.groupId == mGroup.getId()) {
+			mAdapter.addMessage(groupMessage);
+			if (mOnMessageReceivedListener != null) {
+				mOnMessageReceivedListener.onReceived(groupMessage.content);
 			}
 		}
 	}
@@ -181,9 +190,13 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 	}
 
 	@Subscribe(threadMode = ThreadMode.MAIN)
-	public void onUserMessageEvent(UserMessageEvent event) {
-		UserMessage userMessage = event.getUserMessage();
+	public void onUserMessageEvent(UserMessage userMessage) {
 		addUserMessage(userMessage);
+	}
+
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void onGroupMessageEvent(GroupMessage groupMessage) {
+		addGroupMessage(groupMessage);
 	}
 
 	public void setOnMessageReceivedListener(OnMessageReceivedListener onMessageReceivedListener) {

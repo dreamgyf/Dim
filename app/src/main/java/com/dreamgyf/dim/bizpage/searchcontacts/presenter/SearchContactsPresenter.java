@@ -5,12 +5,12 @@ import android.widget.ListView;
 import com.dreamgyf.dim.base.http.HttpObserver;
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.bizpage.searchcontacts.adapter.SearchContactsListViewAdapter;
-import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.bizpage.searchcontacts.listener.OnSearchListener;
 import com.dreamgyf.dim.bizpage.searchcontacts.model.ISearchContactsModel;
 import com.dreamgyf.dim.bizpage.searchcontacts.model.SearchContactsModel;
 import com.dreamgyf.dim.bizpage.searchcontacts.view.ISearchContactsView;
-import com.dreamgyf.dim.data.StaticData;
+import com.dreamgyf.dim.entity.User;
+import com.dreamgyf.dim.utils.UserUtils;
 
 import java.util.List;
 
@@ -60,7 +60,7 @@ public class SearchContactsPresenter extends BasePresenter<ISearchContactsModel,
 
 	@Override
 	public void searchFriend(String query) {
-		mModel.searchFriend(StaticData.my.getId(),query)
+		mModel.searchFriend(UserUtils.my().getId(),query)
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.subscribe(new HttpObserver<List<User>>() {

@@ -8,29 +8,42 @@ public class MqttMessageCallback implements com.dreamgyf.mqtt.client.callback.Mq
 	@Override
 	public void messageArrived(String topic, String message) {
 		MqttTopicHandler.Result topicRes = MqttTopicHandler.analyze(topic);
+		MqttReceiveMessageEntity entity = new MqttReceiveMessageEntity();
+		entity.setTopicRes(topicRes);
+		entity.setMessage(message);
 		switch (topicRes.getType()) {
 			case MqttTopicHandler.RECEIVE_FRIEND_MESSAGE: {
-				MqttReceiveMessageEntity entity = new MqttReceiveMessageEntity();
-				entity.setTopicRes(topicRes);
-				entity.setMessage(message);
 				try {
 					StaticData.receiveFriendMessageQueue.put(entity);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				break;
 			}
+			break;
 			case MqttTopicHandler.RECEIVE_GROUP_MESSAGE: {
-				MqttReceiveMessageEntity entity = new MqttReceiveMessageEntity();
-				entity.setTopicRes(topicRes);
-				entity.setMessage(message);
 				try {
 					StaticData.receiveGroupMessageQueue.put(entity);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				break;
 			}
+			break;
+			case MqttTopicHandler.RECEIVE_FRIEND_ADD: {
+				try {
+					StaticData.receiveAddFriendRequestQueue.put(entity);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			break;
+			case MqttTopicHandler.RECEIVE_GROUP_ADD: {
+				try {
+					StaticData.receiveAddGroupRequestQueue.put(entity);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			break;
 		}
 	}
 }

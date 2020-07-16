@@ -9,7 +9,7 @@ public class UserCache {
 
 	private static List<User> userList = new ArrayList<>();
 
-	public static User findUserById(int userId) {
+	public static User findUser(int userId) {
 		synchronized (UserCache.class) {
 			for(int i = userList.size() - 1;i >= 0;i--) {
 				if(userList.get(i).getId() == userId) {
@@ -29,6 +29,12 @@ public class UserCache {
 				}
 			}
 			userList.add(user);
+		}
+	}
+
+	public static void saveUser(List<User> users) {
+		for(User user : users) {
+			saveUser(user);
 		}
 	}
 }

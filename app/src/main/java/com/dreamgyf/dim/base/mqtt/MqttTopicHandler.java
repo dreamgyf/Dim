@@ -51,13 +51,13 @@ public class MqttTopicHandler {
         }
     }
 
-    public static String build(int type, Integer myId, Integer otherId) throws Exception {
+    public static String build(int type, Integer myId, Integer otherId) {
         switch (type) {
             case SEND_FRIEND_MESSAGE: return "/Dim/" + otherId + "/message/friend/" + myId;
             case SEND_GROUP_MESSAGE: return "/Dim/" + otherId + "/message/group/" + myId;
             case SEND_FRIEND_ADD: return "/Dim/" + otherId + "/add/friend/" + myId;
             case SEND_GROUP_ADD: return "/Dim/" + otherId + "/add/group/" + myId;
-            default: throw new Exception("不能构建此类Topic");
+            default: throw new IllegalArgumentException("不能构建此类Topic");
         }
     }
 
@@ -68,11 +68,18 @@ public class MqttTopicHandler {
         String fromType = topicParam[4];
         Integer fromId = Integer.valueOf(topicParam[5]);
         switch (messageType) {
-            case "message":
+            case "message": {
                 switch (fromType) {
                     case "friend": return new Result(RECEIVE_FRIEND_MESSAGE,fromId,toId);
                     case "group": return new Result(RECEIVE_GROUP_MESSAGE,fromId,toId);
                 }
+            }
+            case "add": {
+                switch (fromType) {
+                    case "friend": return new Result(RECEIVE_FRIEND_ADD,fromId,toId);
+                    case "group": return new Result(RECEIVE_GROUP_ADD,fromId,toId);
+                }
+            }
             default: return new Result(-1,-1,-1);
         }
     }

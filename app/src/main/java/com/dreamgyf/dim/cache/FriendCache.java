@@ -7,13 +7,13 @@ import java.util.List;
 
 public class FriendCache {
 
-	private static List<Friend> FriendList = new ArrayList<>();
+	private static List<Friend> friendList = new ArrayList<>();
 
 	public static Friend findFriendById(int friendId) {
 		synchronized (FriendCache.class) {
-			for(int i = FriendList.size() - 1; i >= 0; i--) {
-				if(FriendList.get(i).getId() == friendId) {
-					return FriendList.get(i);
+			for(int i = friendList.size() - 1; i >= 0; i--) {
+				if(friendList.get(i).getId() == friendId) {
+					return friendList.get(i);
 				}
 			}
 			return null;
@@ -22,13 +22,19 @@ public class FriendCache {
 
 	public static void saveFriend(Friend friend) {
 		synchronized (FriendCache.class) {
-			for(int i = 0; i < FriendList.size(); i++) {
-				if(FriendList.get(i).getId() == friend.getId()) {
-					FriendList.remove(i);
+			for(int i = 0; i < friendList.size(); i++) {
+				if(friendList.get(i).getId() == friend.getId()) {
+					friendList.remove(i);
 					break;
 				}
 			}
-			FriendList.add(friend);
+			friendList.add(friend);
+		}
+	}
+
+	public static void saveFriend(List<Friend> friends) {
+		for(Friend friend : friends) {
+			saveFriend(friend);
 		}
 	}
 
