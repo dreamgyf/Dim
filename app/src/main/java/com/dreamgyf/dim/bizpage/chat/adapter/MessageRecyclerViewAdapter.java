@@ -41,9 +41,9 @@ public class MessageRecyclerViewAdapter<T1 extends Contact, T2 extends Message> 
 	@Override
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 		T2 message = mMessageList.get(position);
-		if(mContact instanceof Friend && message instanceof UserMessage) {
+		if (mContact instanceof Friend && message instanceof UserMessage) {
 			onBindViewHolder(holder, getItemViewType(position), (Friend) mContact, (UserMessage) message);
-		} else if(mContact instanceof Group && message instanceof GroupMessage) {
+		} else if (mContact instanceof Group && message instanceof GroupMessage) {
 			onBindViewHolder(holder, getItemViewType(position), (Group) mContact, (GroupMessage) message);
 		}
 
@@ -86,16 +86,19 @@ public class MessageRecyclerViewAdapter<T1 extends Contact, T2 extends Message> 
 	public int getItemViewType(int position) {
 		int messageType = -1;
 		T2 message = mMessageList.get(position);
-		if(message instanceof UserMessage) {
+		if (message instanceof UserMessage) {
 			messageType = ((UserMessage) message).messageType;
-		} else if(message instanceof GroupMessage) {
+		} else if (message instanceof GroupMessage) {
 			messageType = ((GroupMessage) message).messageType;
 		}
 
 		switch (messageType) {
-			case MessageType.RECEIVE_TEXT: return R.layout.recycler_view_message_receive_text_item;
-			case MessageType.SEND_TEXT: return R.layout.recycler_view_message_send_text_item;
-			default: return -1;
+			case MessageType.RECEIVE_TEXT:
+				return R.layout.recycler_view_message_receive_text_item;
+			case MessageType.SEND_TEXT:
+				return R.layout.recycler_view_message_send_text_item;
+			default:
+				return -1;
 		}
 	}
 
@@ -110,7 +113,7 @@ public class MessageRecyclerViewAdapter<T1 extends Contact, T2 extends Message> 
 	}
 
 	public void addMessage(T2 message) {
-		if(canMessageAdd(message)) {
+		if (canMessageAdd(message)) {
 			synchronized (mMessageList) {
 				mMessageList.add(message);
 				notifyDataSetChanged();
@@ -120,8 +123,8 @@ public class MessageRecyclerViewAdapter<T1 extends Contact, T2 extends Message> 
 
 	public void addMessage(List<T2> messageList) {
 		synchronized (mMessageList) {
-			for(T2 message : messageList) {
-				if(canMessageAdd(message)) {
+			for (T2 message : messageList) {
+				if (canMessageAdd(message)) {
 					mMessageList.add(message);
 				}
 			}
@@ -129,15 +132,15 @@ public class MessageRecyclerViewAdapter<T1 extends Contact, T2 extends Message> 
 		}
 	}
 
-	public void loadUserMessageRecord(List<T2> messageList) {
+	public void loadMessage(List<T2> messageList) {
 		synchronized (mMessageList) {
 			int index = 0;
-			for(T2 message : messageList) {
-				if(canMessageAdd(message)) {
-						mMessageList.add(index++, message);
+			for (T2 message : messageList) {
+				if (canMessageAdd(message)) {
+					mMessageList.add(index++, message);
 				}
 			}
-			notifyItemRangeInserted(0,index);
+			notifyItemRangeInserted(0, index);
 		}
 	}
 

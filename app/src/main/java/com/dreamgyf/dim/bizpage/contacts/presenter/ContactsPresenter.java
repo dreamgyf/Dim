@@ -2,12 +2,17 @@ package com.dreamgyf.dim.bizpage.contacts.presenter;
 
 import android.content.Context;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.dreamgyf.dim.base.mvp.presenter.BasePresenter;
 import com.dreamgyf.dim.bizpage.contacts.adapter.FriendRecyclerViewAdapter;
 import com.dreamgyf.dim.bizpage.contacts.model.ContactsModel;
 import com.dreamgyf.dim.bizpage.contacts.view.ContactsView;
+import com.dreamgyf.dim.eventbus.FriendUpdateEvent;
 
-import androidx.recyclerview.widget.RecyclerView;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView> implements IContactsPresenter {
 
@@ -19,6 +24,8 @@ public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView>
 
 	private RecyclerView mRecyclerView;
 
+	private FriendRecyclerViewAdapter mAdapter;
+
 	public ContactsPresenter(Context context) {
 		super(new ContactsView());
 		this.mContext = context;
@@ -29,6 +36,7 @@ public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView>
 		mView = getView();
 		mView.bindPresenter(this);
 		mView.init();
+		EventBus.getDefault().register(this);
 	}
 
 	@Override
@@ -52,6 +60,11 @@ public class ContactsPresenter extends BasePresenter<ContactsModel,ContactsView>
 
 	public void initRecyclerView(RecyclerView recyclerView) {
 		this.mRecyclerView = recyclerView;
-		mRecyclerView.setAdapter(new FriendRecyclerViewAdapter(mContext));
+		mRecyclerView.setAdapter(mAdapter = new FriendRecyclerViewAdapter(mContext));
+	}
+
+	@Subscribe(threadMode = ThreadMode.MAIN)
+	public void onFriendUpdateEvent(FriendUpdateEvent friendUpdateEvent) {
+		mAdapter.notifyDataSetChanged();
 	}
 }

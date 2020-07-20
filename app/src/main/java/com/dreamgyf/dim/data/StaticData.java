@@ -17,6 +17,10 @@ public class StaticData {
 
     public static final LinkedBlockingQueue<MqttReceiveMessageEntity> receiveAddGroupRequestQueue = new LinkedBlockingQueue<>();
 
+    public static final LinkedBlockingQueue<MqttReceiveMessageEntity> receiveAcceptFriendRequestQueue = new LinkedBlockingQueue<>();
+
+    public static final LinkedBlockingQueue<MqttReceiveMessageEntity> receiveRefuseFriendRequestQueue = new LinkedBlockingQueue<>();
+
     public final static String DOMAIN = "http://47.100.255.133:8088";
 
 }

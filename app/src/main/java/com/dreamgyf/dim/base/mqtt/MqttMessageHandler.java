@@ -61,6 +61,8 @@ public class MqttMessageHandler {
 	}
 
 	public static class Parser {
+		private Parser() {}
+
 		private byte type;
 		/**
 		 * type == REQUEST
@@ -71,7 +73,7 @@ public class MqttMessageHandler {
 		public static Parser parse(String message) {
 			byte[] messageBytes = message.getBytes();
 			Parser parser = new Parser();
-			parser.type = messageBytes[0];
+			parser.type = (byte) ((messageBytes[0] & 0xff) >>> 5);
 			switch (parser.type) {
 				case Type.REQUEST: {
 					int verifyBytesLength = messageBytes[1] & 0xff;

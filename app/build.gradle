@@ -62,5 +62,5 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'com.dreamgyf.android.view:loading-recycler-view:0.2.0'
 
-    implementation ("com.github.bumptech.glide:glide:4.11.0")
+    implementation("com.github.bumptech.glide:glide:4.11.0")
 }

@@ -39,5 +39,6 @@ public abstract class BaseActivity<M extends IBaseModel,V extends IBaseView,P ex
 	protected void onDestroy() {
 		super.onDestroy();
 		mPresenter.detach();
+		mPresenter = null;
 	}
 }

@@ -21,6 +21,7 @@ import com.dreamgyf.dim.bizpage.chat.view.ChatActivity;
 import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.enums.IntentCode;
+import com.dreamgyf.dim.utils.NameUtils;
 import com.dreamgyf.dim.utils.imageloader.ImageLoader;
 
 public class UserInfoActivity extends AppCompatActivity {
@@ -93,7 +94,7 @@ public class UserInfoActivity extends AppCompatActivity {
 
     private void renderUserInfo() {
         ImageLoader.with(this).loadAvatar(mUser.getAvatarId()).into(mIvAvatar);
-        mTvNickname.setText(mUser.getNickname() != null ? mUser.getNickname() : mUser.getUsername());
+        mTvNickname.setText(NameUtils.getUsername(mUser));
         mTvUsername.setText("用户名 : " + mUser.getUsername());
     }
 

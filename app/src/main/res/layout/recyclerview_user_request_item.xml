@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	xmlns:tools="http://schemas.android.com/tools">
+
+	<androidx.cardview.widget.CardView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		app:cardCornerRadius="8dp"
+		app:cardElevation="5dp"
+		app:cardBackgroundColor="@android:color/white"
+		android:layout_margin="10dp"
+		app:contentPadding="10dp">
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content">
+
+			<ImageView
+				android:id="@+id/iv_avatar"
+				android:layout_width="45dp"
+				android:layout_height="45dp"/>
+
+			<View
+				android:layout_width="20dp"
+				android:layout_height="0dp" />
+
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+
+				<TextView
+					android:id="@+id/tv_title"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:textColor="@android:color/black"
+					android:textSize="18sp"
+					android:maxLines="1"
+					tools:text="始终都是梦" />
+
+				<TextView
+					android:id="@+id/tv_subtitle"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:textSize="12sp"
+					android:maxLines="3"
+					android:ellipsize="end"
+					tools:text="你好，我是始终都是梦" />
+
+				<LinearLayout
+					android:id="@+id/container_operable"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:layout_gravity="right"
+					android:visibility="gone">
+
+					<TextView
+						android:id="@+id/tv_accept"
+						android:gravity="center"
+						android:layout_width="wrap_content"
+						android:layout_height="20dp"
+						android:paddingLeft="10dp"
+						android:paddingRight="10dp"
+						android:background="@drawable/bg_user_request_interaction_button"
+						android:textSize="14sp"
+						android:textColor="@color/colorPrimary"
+						android:text="同意"/>
+
+					<View
+						android:layout_width="10dp"
+						android:layout_height="0dp" />
+
+					<TextView
+						android:id="@+id/tv_refuse"
+						android:gravity="center"
+						android:layout_width="wrap_content"
+						android:layout_height="20dp"
+						android:paddingLeft="10dp"
+						android:paddingRight="10dp"
+						android:background="@drawable/bg_user_request_interaction_button"
+						android:textSize="14sp"
+						android:textColor="@color/colorPrimary"
+						android:text="拒绝"/>
+
+				</LinearLayout>
+
+				<LinearLayout
+					android:id="@+id/container_inoperable"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:layout_gravity="right"
+					android:visibility="gone">
+
+					<TextView
+						android:id="@+id/tv_status"
+						android:gravity="center"
+						android:layout_width="wrap_content"
+						android:layout_height="20dp"
+						android:paddingLeft="10dp"
+						android:paddingRight="10dp"
+						android:textSize="12sp"
+						android:textColor="@android:color/darker_gray"
+						android:text="已同意"/>
+
+				</LinearLayout>
+
+			</LinearLayout>
+
+		</LinearLayout>
+
+
+	</androidx.cardview.widget.CardView>
+
+
+</FrameLayout>

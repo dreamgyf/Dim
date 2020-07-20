@@ -32,6 +32,7 @@ public class AddContactsModel implements IAddContactsModel {
 				.setVerifyText(verifyText)
 				.setRemarkText(remarkText)
 				.build();
+
 		try {
 			StaticData.mqttClient.publish(topic, message
 					, new MqttPublishOptions().setQoS(2), (t, m) ->

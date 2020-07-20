@@ -8,7 +8,7 @@
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-	<uses-permission android:name="android.permission.READ_CONTACTS"/>
+	<uses-permission android:name="android.permission.READ_CONTACTS" />
 
 	<application
 		android:name=".MainApplication"
@@ -19,11 +19,14 @@
 		android:roundIcon="@drawable/small_logo"
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme"
-		android:usesCleartextTraffic="true">
-
+		android:usesCleartextTraffic="true"
+		>
+		<activity android:name=".bizpage.userrequest.view.UserRequestActivity">
+		</activity>
 		<activity
 			android:name=".bizpage.splash.view.SplashActivity"
-			android:theme="@style/LoginTheme">
+			android:theme="@style/LoginTheme"
+			>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 
@@ -32,14 +35,16 @@
 		</activity>
 		<activity
 			android:name=".bizpage.login.view.LoginActivity"
-			android:theme="@style/LoginTheme">
+			android:theme="@style/LoginTheme"
+			>
 		</activity>
 		<activity android:name=".bizpage.addcontacts.view.AddContactsActivity" />
 		<activity android:name=".bizpage.userinfo.UserInfoActivity" />
 		<activity android:name=".bizpage.searchcontacts.view.SearchContactsActivity" />
 		<activity
 			android:name=".bizpage.chat.view.ChatActivity"
-			android:windowSoftInputMode="adjustResize|stateHidden"/>
+			android:windowSoftInputMode="adjustResize|stateHidden"
+			/>
 		<activity android:name=".bizpage.main.view.MainActivity" />
 	</application>
 

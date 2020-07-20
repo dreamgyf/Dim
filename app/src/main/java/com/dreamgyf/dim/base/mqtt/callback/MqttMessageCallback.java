@@ -44,6 +44,22 @@ public class MqttMessageCallback implements com.dreamgyf.mqtt.client.callback.Mq
 				}
 			}
 			break;
+			case MqttTopicHandler.RECEIVE_FRIEND_ACCEPT: {
+				try {
+					StaticData.receiveAcceptFriendRequestQueue.put(entity);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			break;
+			case MqttTopicHandler.RECEIVE_FRIEND_REFUSE: {
+				try {
+					StaticData.receiveRefuseFriendRequestQueue.put(entity);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			break;
 		}
 	}
 }

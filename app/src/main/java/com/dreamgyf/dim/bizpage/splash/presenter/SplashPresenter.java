@@ -33,7 +33,6 @@ public class SplashPresenter extends BasePresenter<SplashModel, SplashActivity> 
 	protected void onAttach() {
 		mActivity = getView();
 		verifyPermissions();
-		tryLogin();
 	}
 
 	@Override
@@ -48,7 +47,9 @@ public class SplashPresenter extends BasePresenter<SplashModel, SplashActivity> 
 
 	@Override
 	public void verifyPermissions() {
-		PermissionsUtils.verifyStoragePermissions(mActivity);
+		if(!PermissionsUtils.verifyStoragePermissions(mActivity)) {
+			tryLogin();
+		}
 	}
 
 	@Override

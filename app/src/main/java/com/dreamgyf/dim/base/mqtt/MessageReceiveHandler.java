@@ -5,17 +5,21 @@ import android.app.NotificationManager;
 import android.util.Log;
 
 import com.dreamgyf.dim.MainApplication;
+import com.dreamgyf.dim.api.service.FriendApiService;
 import com.dreamgyf.dim.base.http.HttpObserver;
 import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.database.entity.GroupMessage;
 import com.dreamgyf.dim.database.entity.UserMessage;
+import com.dreamgyf.dim.database.entity.UserRequest;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.entity.Group;
 import com.dreamgyf.dim.entity.User;
 import com.dreamgyf.dim.enums.ConversationType;
 import com.dreamgyf.dim.enums.MessageType;
+import com.dreamgyf.dim.enums.UserRequestStatus;
+import com.dreamgyf.dim.eventbus.FriendUpdateEvent;
 import com.dreamgyf.dim.utils.GroupUtils;
 import com.dreamgyf.dim.utils.NameUtils;
 import com.dreamgyf.dim.utils.NotificationUtils;
@@ -53,7 +57,7 @@ public class MessageReceiveHandler {
 		return INSTANCE;
 	}
 
-	private ExecutorService mExecutors = Executors.newFixedThreadPool(5);
+	private ExecutorService mExecutors = Executors.newFixedThreadPool(10);
 
 	private Boolean isRunning = false;
 
@@ -103,9 +107,8 @@ public class MessageReceiveHandler {
 	private Runnable mReceiveGroupMessage = () -> {
 		Thread.currentThread().setName("Thread-ReceiveGroupMessage");
 		while (isRunning) {
-			MqttReceiveMessageEntity messageEntity = null;
 			try {
-				messageEntity = StaticData.receiveGroupMessageQueue.take();
+				MqttReceiveMessageEntity messageEntity = StaticData.receiveGroupMessageQueue.take();
 				MqttTopicHandler.Result topicRes = messageEntity.getTopicRes();
 				String message = messageEntity.getMessage();
 				int userId = topicRes.getFromId();
@@ -129,6 +132,7 @@ public class MessageReceiveHandler {
 				conversation.setTitle(group.getName());
 				conversation.setSubtitle(subtitle);
 				mEventBus.post(conversation);
+
 				GroupMessage groupMessage = new GroupMessage();
 				groupMessage.myId = UserUtils.my().getId();
 				groupMessage.userId = userId;
@@ -163,15 +167,24 @@ public class MessageReceiveHandler {
 						}
 						//更新会话数据
 						Conversation conversation = new Conversation();
-						conversation.setType(ConversationType.FRIEND_CHAT);
+						conversation.setType(ConversationType.FRIEND_REQUEST);
 						conversation.setId(userId);
 						//TODO 设置好友请求头像为默认
 						conversation.setAvatarId(user.getAvatarId());
 						conversation.setTitle(title);
 						conversation.setSubtitle(subtitle);
 						mEventBus.post(conversation);
-						//TODO 更新好友请求界面
-						//TODO 将好友请求添加到数据库
+
+						MqttMessageHandler.Parser parser = MqttMessageHandler.Parser.parse(message);
+						UserRequest userRequest = new UserRequest();
+						userRequest.receiverId = UserUtils.my().getId();
+						userRequest.senderId = userId;
+						userRequest.verify = parser.getVerifyText();
+						userRequest.remark = parser.getRemarkText();
+						userRequest.status = UserRequestStatus.WAIT;
+						userRequest.receiveTime = new Timestamp(System.currentTimeMillis());
+						mApplication.getDatabase().userRequestDao().insertUserRequest(userRequest);
+						mEventBus.post(userRequest);
 					}
 
 					@Override
@@ -184,6 +197,42 @@ public class MessageReceiveHandler {
 
 					}
 				});
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	};
+
+	private Runnable mReceiveAcceptFriendRequest = () -> {
+		Thread.currentThread().setName("Thread-ReceiveAcceptFriendRequest");
+		while (isRunning) {
+			try {
+				MqttReceiveMessageEntity messageEntity = StaticData.receiveAcceptFriendRequestQueue.take();
+				MqttTopicHandler.Result topicRes = messageEntity.getTopicRes();
+				int userId = topicRes.getFromId();
+				UserRequest userRequest = MainApplication.getInstance().getDatabase().userRequestDao().findUserRequestByReceiverId(UserUtils.my().getId(), userId);
+				if(userRequest != null && userRequest.status == UserRequestStatus.WAIT) {
+					FriendApiService.getInstance().fetchFriendInfo(userId)
+							.subscribe(new HttpObserver<Friend>() {
+								@Override
+								public void onSuccess(Friend friend) throws Throwable {
+									userRequest.status = UserRequestStatus.ACCEPT;
+									MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
+									UserUtils.addFriend(friend);
+									EventBus.getDefault().post(new FriendUpdateEvent());
+								}
+
+								@Override
+								public void onFailed(Throwable t) throws Throwable {
+
+								}
+
+								@Override
+								public void onCaughtThrowable(Throwable t) {
+
+								}
+							});
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -11,6 +11,8 @@ import com.dreamgyf.dim.bizpage.splash.presenter.SplashPresenter;
 
 public class SplashActivity extends BaseActivity<SplashModel,SplashActivity, SplashPresenter> implements ISplashView {
 
+	private SplashPresenter mPresenter;
+
 	@NonNull
 	@Override
 	public SplashPresenter bindPresenter() {
@@ -21,5 +23,12 @@ public class SplashActivity extends BaseActivity<SplashModel,SplashActivity, Spl
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash);
+		mPresenter = getPresenter();
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		mPresenter.tryLogin();
 	}
 }

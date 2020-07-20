@@ -139,7 +139,7 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 
 						@Override
 						public void onNext(@NonNull List<UserMessage> userMessages) {
-							mAdapter.loadUserMessageRecord(userMessages);
+							mAdapter.loadMessage(userMessages);
 							if(offset == 0) {
 								mView.scrollToBottom(false);
 							}

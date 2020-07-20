@@ -6,19 +6,21 @@ import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.base.mvp.model.IBaseModel;
 import com.dreamgyf.dim.base.mvp.view.IBaseView;
 
+import java.lang.ref.WeakReference;
+
 public abstract class BasePresenter<M extends IBaseModel, V extends IBaseView> implements IBasePresenter<M,V> {
 
-	private M mModel;
+	private WeakReference<M> mModelRef;
 
-	private V mView;
+	private WeakReference<V> mViewRef;
 
 	public BasePresenter(V view) {
-		this.mView = view;
+		this.mViewRef = new WeakReference<>(view);
 	}
 
 	@Override
 	public void attach() {
-		mModel = bindModel();
+		mModelRef = new WeakReference<>(bindModel());
 		onAttach();
 	}
 
@@ -39,16 +41,16 @@ public abstract class BasePresenter<M extends IBaseModel, V extends IBaseView> i
 	protected abstract M bindModel();
 
 	public M getModel() {
-		return mModel;
+		return mModelRef.get();
 	}
 
 	public V getView() {
-		return mView;
+		return mViewRef.get();
 	}
 
 	public Context getContext() {
-		if(mView instanceof Context) {
-			return (Context) mView;
+		if(mViewRef.get() instanceof Context) {
+			return (Context) mViewRef.get();
 		}
 		return MainApplication.getInstance().getApplicationContext();
 	}

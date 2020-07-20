@@ -11,6 +11,7 @@ import com.dreamgyf.dim.bizpage.chat.view.ChatActivity;
 import com.dreamgyf.dim.bizpage.conversation.adapter.ConversationListViewAdapter;
 import com.dreamgyf.dim.bizpage.conversation.model.ConversationModel;
 import com.dreamgyf.dim.bizpage.conversation.view.ConversationView;
+import com.dreamgyf.dim.bizpage.userrequest.view.UserRequestActivity;
 import com.dreamgyf.dim.entity.Conversation;
 import com.dreamgyf.dim.enums.ConversationType;
 import com.dreamgyf.dim.sharedpreferences.DataAccessUtils;
@@ -78,12 +79,16 @@ public class ConversationPresenter extends BasePresenter<ConversationModel,Conve
 				switch (conversation.getType()) {
 					case ConversationType.FRIEND_CHAT: {
 						mContext.startActivity(ChatActivity.createIntent(mContext, UserUtils.findFriend(conversation.getId())));
-						break;
 					}
+					break;
 					case ConversationType.GROUP_CHAT: {
 						mContext.startActivity(ChatActivity.createIntent(mContext, GroupUtils.findGroup(conversation.getId())));
-						break;
 					}
+					break;
+					case ConversationType.FRIEND_REQUEST: {
+						mContext.startActivity(UserRequestActivity.createIntent(mContext));
+					}
+					break;
 				}
 				if(mOnItemClickListener != null) {
 					mOnItemClickListener.onItemClick(parent,view,position,id);
