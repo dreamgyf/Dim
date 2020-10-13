@@ -4,9 +4,9 @@ import com.dreamgyf.dim.base.mqtt.MqttTopicHandler;
 import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
 import com.dreamgyf.dim.data.StaticData;
 
-public class MqttMessageCallback implements com.dreamgyf.mqtt.client.callback.MqttMessageCallback {
-	@Override
-	public void messageArrived(String topic, String message) {
+public class MqttMessageCallback {
+
+	public static void onMessageArrived(String topic, String message) {
 		MqttTopicHandler.Result topicRes = MqttTopicHandler.analyze(topic);
 		MqttReceiveMessageEntity entity = new MqttReceiveMessageEntity();
 		entity.setTopicRes(topicRes);

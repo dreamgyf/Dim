@@ -8,10 +8,7 @@ import com.dreamgyf.dim.base.mqtt.MqttTopicHandler;
 import com.dreamgyf.dim.bizpage.addcontacts.listener.OnSendRequestListener;
 import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.utils.UserUtils;
-import com.dreamgyf.exception.MqttException;
-import com.dreamgyf.mqtt.client.MqttPublishOptions;
-
-import java.io.IOException;
+import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 
 public class AddContactsModel implements IAddContactsModel {
 
@@ -33,22 +30,12 @@ public class AddContactsModel implements IAddContactsModel {
 				.setRemarkText(remarkText)
 				.build();
 
-		try {
-			StaticData.mqttClient.publish(topic, message
-					, new MqttPublishOptions().setQoS(2), (t, m) ->
-							mHandler.post(() -> {
-								if (mOnSendRequestListener != null) {
-									mOnSendRequestListener.onSuccess();
-								}
-							}));
-		} catch (IOException | MqttException e) {
-			e.printStackTrace();
-			mHandler.post(() -> {
-				if (mOnSendRequestListener != null) {
-					mOnSendRequestListener.onFailure(e);
-				}
-			});
-		}
+		StaticData.mqttClient.publish(topic, message, new MqttPublishOption().QoS(2));
+		mHandler.post(() -> {
+			if (mOnSendRequestListener != null) {
+				mOnSendRequestListener.onSuccess();
+			}
+		});
 	}
 
 	@Override
@@ -59,21 +46,12 @@ public class AddContactsModel implements IAddContactsModel {
 				.setVerifyText(verifyText)
 				.setRemarkText(remarkText)
 				.build();
-		try {
-			StaticData.mqttClient.publish(topic, message
-					, new MqttPublishOptions().setQoS(2), (t, m) ->
-							mHandler.post(() -> {
-								if (mOnSendRequestListener != null) {
-									mOnSendRequestListener.onSuccess();
-								}
-							}));
-		} catch (IOException | MqttException e) {
-			e.printStackTrace();
-			mHandler.post(() -> {
-				if (mOnSendRequestListener != null) {
-					mOnSendRequestListener.onFailure(e);
-				}
-			});
-		}
+
+		StaticData.mqttClient.publish(topic, message, new MqttPublishOption().QoS(2));
+		mHandler.post(() -> {
+			if (mOnSendRequestListener != null) {
+				mOnSendRequestListener.onSuccess();
+			}
+		});
 	}
 }

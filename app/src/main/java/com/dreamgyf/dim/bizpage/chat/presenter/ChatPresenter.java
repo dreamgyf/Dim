@@ -81,11 +81,6 @@ public class ChatPresenter extends BasePresenter<ChatModel, ChatActivity> implem
 					mEventBus.post((UserMessage) message);
 				}
 			}
-
-			@Override
-			public void onSendError(Throwable t) {
-
-			}
 		});
 	}
 

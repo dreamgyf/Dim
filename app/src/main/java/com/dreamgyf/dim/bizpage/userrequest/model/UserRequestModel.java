@@ -13,8 +13,7 @@ import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.enums.UserRequestStatus;
 import com.dreamgyf.dim.eventbus.FriendUpdateEvent;
 import com.dreamgyf.dim.utils.UserUtils;
-import com.dreamgyf.mqtt.client.MqttPublishOptions;
-import com.dreamgyf.mqtt.client.callback.MqttPublishCallback;
+import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -41,44 +40,40 @@ public class UserRequestModel implements IUserRequestModel {
 					public void onSuccess(Boolean aBoolean) throws Throwable {
 						if(aBoolean) {
 							String topic = MqttTopicHandler.build(MqttTopicHandler.SEND_FRIEND_ACCEPT, UserUtils.my().getId(), userRequest.senderId);
-							StaticData.mqttClient.publish(topic, "", new MqttPublishOptions().setQoS(2), new MqttPublishCallback() {
-								@Override
-								public void messageArrived(String topic, String message) {
-									userRequest.status = UserRequestStatus.ACCEPT;
-									MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
-									FriendApiService.getInstance().fetchFriendInfo(userRequest.senderId)
-											.subscribe(new HttpObserver<Friend>() {
-												@Override
-												public void onSuccess(Friend friend) throws Throwable {
-													UserUtils.addFriend(friend);
-													EventBus.getDefault().post(new FriendUpdateEvent());
-													mMainHandler.post(() -> {
-														if(mOnUserRequestHandleListener != null) {
-															mOnUserRequestHandleListener.onAcceptSuccess(userRequest.senderId);
-														}
-													});
-												}
-
-												@Override
-												public void onFailed(Throwable t) throws Throwable {
-													mMainHandler.post(() -> {
-														if(mOnUserRequestHandleListener != null) {
-															mOnUserRequestHandleListener.onAcceptSuccess(userRequest.senderId);
-														}
-													});
-												}
-
-												@Override
-												public void onCaughtThrowable(Throwable t) {
-													mMainHandler.post(() -> {
-														if(mOnUserRequestHandleListener != null) {
-															mOnUserRequestHandleListener.onAcceptSuccess(userRequest.senderId);
-														}
-													});
+							StaticData.mqttClient.publish(topic, "", new MqttPublishOption().QoS(2));
+							userRequest.status = UserRequestStatus.ACCEPT;
+							MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
+							FriendApiService.getInstance().fetchFriendInfo(userRequest.senderId)
+									.subscribe(new HttpObserver<Friend>() {
+										@Override
+										public void onSuccess(Friend friend) throws Throwable {
+											UserUtils.addFriend(friend);
+											EventBus.getDefault().post(new FriendUpdateEvent());
+											mMainHandler.post(() -> {
+												if(mOnUserRequestHandleListener != null) {
+													mOnUserRequestHandleListener.onAcceptSuccess(userRequest.senderId);
 												}
 											});
-								}
-							});
+										}
+
+										@Override
+										public void onFailed(Throwable t) throws Throwable {
+											mMainHandler.post(() -> {
+												if(mOnUserRequestHandleListener != null) {
+													mOnUserRequestHandleListener.onAcceptSuccess(userRequest.senderId);
+												}
+											});
+										}
+
+										@Override
+										public void onCaughtThrowable(Throwable t) {
+											mMainHandler.post(() -> {
+												if(mOnUserRequestHandleListener != null) {
+													mOnUserRequestHandleListener.onAcceptSuccess(userRequest.senderId);
+												}
+											});
+										}
+									});
 						} else {
 							onFailed(new Throwable());
 						}
@@ -101,24 +96,13 @@ public class UserRequestModel implements IUserRequestModel {
 	@Override
 	public void refuseRequest(UserRequest userRequest) {
 		String topic = MqttTopicHandler.build(MqttTopicHandler.SEND_FRIEND_REFUSE, UserUtils.my().getId(), userRequest.senderId);
-		try {
-			StaticData.mqttClient.publish(topic, "", new MqttPublishOptions().setQoS(2), new MqttPublishCallback() {
-				@Override
-				public void messageArrived(String topic, String message) {
-					userRequest.status = UserRequestStatus.REFUSE;
-					MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
-					mMainHandler.post(() -> {
-						if(mOnUserRequestHandleListener != null) {
-							mOnUserRequestHandleListener.onRefuseSuccess(userRequest.senderId);
-						}
-					});
-				}
-			});
-		} catch (Throwable t) {
-			t.printStackTrace();
+		StaticData.mqttClient.publish(topic, "", new MqttPublishOption().QoS(2));
+		userRequest.status = UserRequestStatus.REFUSE;
+		MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
+		mMainHandler.post(() -> {
 			if(mOnUserRequestHandleListener != null) {
-				mOnUserRequestHandleListener.onRefuseFailure(userRequest.senderId);
+				mOnUserRequestHandleListener.onRefuseSuccess(userRequest.senderId);
 			}
-		}
+		});
 	}
 }

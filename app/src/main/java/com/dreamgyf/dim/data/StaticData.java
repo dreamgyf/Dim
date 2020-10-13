@@ -1,7 +1,7 @@
 package com.dreamgyf.dim.data;
 
 import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
-import com.dreamgyf.mqtt.client.MqttClient;
+import com.dreamgyf.gmqyttf.client.MqttClient;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
