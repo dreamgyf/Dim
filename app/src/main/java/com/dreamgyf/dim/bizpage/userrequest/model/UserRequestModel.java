@@ -6,14 +6,13 @@ import android.os.Looper;
 import com.dreamgyf.dim.MainApplication;
 import com.dreamgyf.dim.api.service.FriendApiService;
 import com.dreamgyf.dim.base.http.HttpObserver;
+import com.dreamgyf.dim.base.mqtt.MqttClientService;
 import com.dreamgyf.dim.base.mqtt.MqttTopicHandler;
-import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.database.entity.UserRequest;
 import com.dreamgyf.dim.entity.Friend;
 import com.dreamgyf.dim.enums.UserRequestStatus;
 import com.dreamgyf.dim.eventbus.FriendUpdateEvent;
 import com.dreamgyf.dim.utils.UserUtils;
-import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -40,7 +39,7 @@ public class UserRequestModel implements IUserRequestModel {
 					public void onSuccess(Boolean aBoolean) throws Throwable {
 						if(aBoolean) {
 							String topic = MqttTopicHandler.build(MqttTopicHandler.SEND_FRIEND_ACCEPT, UserUtils.my().getId(), userRequest.senderId);
-							StaticData.mqttClient.publish(topic, "", new MqttPublishOption().QoS(2));
+							MqttClientService.publish(topic, "");
 							userRequest.status = UserRequestStatus.ACCEPT;
 							MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
 							FriendApiService.getInstance().fetchFriendInfo(userRequest.senderId)
@@ -96,7 +95,7 @@ public class UserRequestModel implements IUserRequestModel {
 	@Override
 	public void refuseRequest(UserRequest userRequest) {
 		String topic = MqttTopicHandler.build(MqttTopicHandler.SEND_FRIEND_REFUSE, UserUtils.my().getId(), userRequest.senderId);
-		StaticData.mqttClient.publish(topic, "", new MqttPublishOption().QoS(2));
+		MqttClientService.publish(topic, "");
 		userRequest.status = UserRequestStatus.REFUSE;
 		MainApplication.getInstance().getDatabase().userRequestDao().updateUserRequest(userRequest);
 		mMainHandler.post(() -> {

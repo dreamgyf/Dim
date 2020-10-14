@@ -3,12 +3,11 @@ package com.dreamgyf.dim.bizpage.addcontacts.model;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.dreamgyf.dim.base.mqtt.MqttClientService;
 import com.dreamgyf.dim.base.mqtt.MqttMessageHandler;
 import com.dreamgyf.dim.base.mqtt.MqttTopicHandler;
 import com.dreamgyf.dim.bizpage.addcontacts.listener.OnSendRequestListener;
-import com.dreamgyf.dim.data.StaticData;
 import com.dreamgyf.dim.utils.UserUtils;
-import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 
 public class AddContactsModel implements IAddContactsModel {
 
@@ -30,7 +29,7 @@ public class AddContactsModel implements IAddContactsModel {
 				.setRemarkText(remarkText)
 				.build();
 
-		StaticData.mqttClient.publish(topic, message, new MqttPublishOption().QoS(2));
+		MqttClientService.publish(topic, message);
 		mHandler.post(() -> {
 			if (mOnSendRequestListener != null) {
 				mOnSendRequestListener.onSuccess();
@@ -47,7 +46,7 @@ public class AddContactsModel implements IAddContactsModel {
 				.setRemarkText(remarkText)
 				.build();
 
-		StaticData.mqttClient.publish(topic, message, new MqttPublishOption().QoS(2));
+		MqttClientService.publish(topic, message);
 		mHandler.post(() -> {
 			if (mOnSendRequestListener != null) {
 				mOnSendRequestListener.onSuccess();

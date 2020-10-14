@@ -1,13 +1,10 @@
 package com.dreamgyf.dim.data;
 
 import com.dreamgyf.dim.base.mqtt.entity.MqttReceiveMessageEntity;
-import com.dreamgyf.gmqyttf.client.MqttClient;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class StaticData {
-
-    public static MqttClient mqttClient;
 
     public static final LinkedBlockingQueue<MqttReceiveMessageEntity> receiveFriendMessageQueue = new LinkedBlockingQueue<>();
 
